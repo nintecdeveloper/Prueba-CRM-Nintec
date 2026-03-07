@@ -1,0 +1,3906 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OSLAPRINT | Panel Técnico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --osla-orange: #f37021;
+            --osla-dark: #0a0a0a;
+            --osla-card: #161616;
+        }
+
+        body {
+            background-color: var(--osla-dark);
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+            padding-bottom: 80px;
+        }
+
+        .navbar {
+            background: #000;
+            border-bottom: 2px solid var(--osla-orange);
+        }
+
+        /* Prevent iOS zoom on inputs */
+        .form-control,
+        .form-select {
+            background: #000 !important;
+            border: 1px solid #444 !important;
+            color: #fff !important;
+            font-size: 16px !important;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--osla-orange);
+            box-shadow: none;
+        }
+
+        .text-muted {
+            color: #d1d1d1 !important;
+        }
+
+        .text-secondary {
+            color: #bcbcbc !important;
+        }
+
+        .form-label,
+        label {
+            color: #f8f9fa !important;
+            font-weight: 500;
+        }
+
+        .small,
+        small {
+            color: #e0e0e0 !important;
+        }
+
+        .fc-event {
+            cursor: pointer;
+        }
+
+        .menu-card {
+            background: var(--osla-card);
+            border: 2px solid #222;
+            border-radius: 20px;
+            padding: 25px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-align: center;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .menu-card:hover {
+            border-color: var(--osla-orange);
+            transform: translateY(-5px);
+            background: #1f1f1f;
+        }
+
+        .btn-osla {
+            background: var(--osla-orange);
+            color: white;
+            border: none;
+            font-weight: bold;
+            padding: 12px;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 1.1rem;
+        }
+
+        #calendar {
+            background: #fff;
+            color: #333;
+            padding: 10px;
+            border-radius: 10px;
+            min-height: 620px;
+        }
+
+        /* Task List Styles */
+        .task-list-container {
+            max-height: 580px;
+            overflow-y: auto;
+        }
+
+        .task-item {
+            background: #1f1f1f;
+            border-left: 4px solid #444;
+            padding: 7px 10px;
+            margin-bottom: 6px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-size: 0.82rem;
+        }
+
+        .task-item:hover {
+            background: #2a2a2a;
+        }
+
+        .task-item.status-Completado {
+            border-left-color: #198754;
+            opacity: 0.7;
+        }
+
+        .task-item.status-Pendiente {
+            border-left-color: var(--osla-orange);
+        }
+
+        /* Autocomplete Styles */
+        .suggestions-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            background: #1f1f1f;
+            border: 1px solid #444;
+            border-radius: 0 0 8px 8px;
+            z-index: 1050;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #333;
+            color: #fff;
+        }
+
+        .suggestion-item:hover {
+            background: var(--osla-orange);
+            color: white;
+        }
+
+        /* File upload area */
+        .file-upload-area {
+            border: 2px dashed #666;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            background: #161616;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--osla-orange);
+            background: #1f1f1f;
+        }
+
+        .file-upload-area.drag-over {
+            border-color: var(--osla-orange);
+            background: #2a2a2a;
+        }
+
+        .file-list {
+            margin-top: 10px;
+        }
+
+        .file-item {
+            background: #1f1f1f;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-item .remove-file {
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+
+            /* ── FullCalendar ── */
+            .fc-toolbar {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .fc-toolbar-title {
+                font-size: 1.2rem !important;
+            }
+            .fc-toolbar-chunk {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 4px;
+            }
+
+            /* ── Section toolbars: all d-flex between → wrap ── */
+            .d-flex.justify-content-between {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            /* ── All button groups wrap ── */
+            .d-flex.gap-2,
+            .d-flex.gap-1 {
+                flex-wrap: wrap;
+            }
+
+            /* ── Minimum tap targets for all buttons ── */
+            .btn, .btn-sm {
+                min-height: 36px;
+            }
+            td .btn, .btn-action {
+                min-width: 36px;
+                min-height: 36px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* ── Modals: full-width on small screens ── */
+            .modal-dialog {
+                margin: 0.5rem;
+                max-width: calc(100vw - 1rem);
+            }
+            .modal-lg {
+                max-width: calc(100vw - 1rem);
+            }
+
+            /* ── Form rows collapse to single column ── */
+            .row.g-2 > [class*="col-sm"],
+            .row.g-2 > [class*="col-md"],
+            .row.g-3 > [class*="col-sm"],
+            .row.g-3 > [class*="col-md"] {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+
+            /* ── Agenda section header buttons wrap ── */
+            #section-agenda .d-flex.gap-2 {
+                flex-wrap: wrap;
+                width: 100%;
+            }
+            #section-agenda .d-flex.gap-2 .btn {
+                flex: 1 1 auto;
+                font-size: 0.82rem;
+                padding: 6px 10px;
+            }
+
+            /* ── Home menu cards: 2 per row ── */
+            #home-menu .col-12.col-md-6 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+            .menu-card {
+                padding: 15px 10px;
+            }
+            .menu-card .fs-1 {
+                font-size: 1.8rem !important;
+            }
+
+            /* ── Parte form ── */
+            #section-parte .row > [class*="col-"] {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+
+        /* Firma Digital */
+        .signature-container {
+            background: #fff;
+            border: 2px dashed #f37021;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .signature-canvas {
+            width: 100%;
+            height: 200px;
+            background: white;
+            touch-action: none;
+            cursor: crosshair;
+            border-radius: 4px;
+        }
+
+        /* Archivos */
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .file-item .remove-file {
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .file-item .remove-file:hover {
+            color: #ff4d4d;
+        }
+
+        #fileUploadArea.drag-over {
+            border-color: var(--osla-orange);
+            background-color: rgba(243, 112, 33, 0.1);
+        }
+
+        /* Filtros Calendario */
+        .btn-check:checked + .btn-outline-custom {
+            color: white !important;
+            background-color: var(--osla-orange) !important;
+            border-color: var(--osla-orange) !important;
+            border-width: 2px;
+            opacity: 1;
+            font-weight: 700;
+            box-shadow: 0 0 10px rgba(243, 112, 33, 0.5);
+        }
+
+        .btn-outline-custom {
+            color: #bbb;
+            border-color: #555;
+            background-color: transparent;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-custom:hover {
+            opacity: 1;
+            filter: brightness(1.2);
+            background-color: rgba(243, 112, 33, 0.2);
+            border-color: var(--osla-orange);
+        }
+
+        .filter-group {
+            background: #1f1f1f;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+
+        /* Toast notificaciones */
+        #toastContainer {
+            position: fixed;
+            top: 75px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .osla-toast {
+            background: #1f1f1f;
+            border-left: 4px solid var(--osla-orange);
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            font-size: 0.95rem;
+            min-width: 260px;
+            animation: toastIn 0.25s ease;
+        }
+        .osla-toast.success { border-left-color: #198754; }
+        .osla-toast.error   { border-left-color: #dc3545; }
+        .osla-toast.info    { border-left-color: #0dcaf0; }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(30px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+    </style>
+</head>
+
+<body>
+<div id="toastContainer"></div>
+
+    <nav class="navbar px-3 py-3 mb-4 sticky-top">
+        <div class="d-flex justify-content-between w-100 align-items-center">
+            <span class="fw-bold fs-4 text-white">OSLA<span style="color:var(--osla-orange)">PRINT</span></span>
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-white fw-bold me-2">Hola {{ current_user.username }}</span>
+                <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal"
+                    data-bs-target="#modalChangePassword" title="Cambiar Contraseña">
+                    <i class="bi bi-key-fill"></i>
+                </button>
+                <a href="/logout" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-right"></i></a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-3 px-md-5">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show bg-dark text-white border-secondary osla-flash">
+            {{ message }}<button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}{% endif %}
+        {% endwith %}
+
+        <div id="home-menu" class="row g-3 justify-content-center" style="max-width: 900px; margin: auto;">
+
+            <!-- ✅ Aviso de parte en proceso -->
+            <div id="draft-notice" class="col-12 d-none">
+                <div class="alert mb-0 d-flex align-items-center justify-content-between gap-2"
+                     style="background:#1a1a1a; border:2px solid var(--osla-orange); border-radius:12px;">
+                    <div>
+                        <i class="bi bi-pencil-square me-2" style="color:var(--osla-orange);"></i>
+                        <strong style="color:var(--osla-orange);">Parte en proceso</strong>
+                        <span class="text-white ms-2 small">Tienes un parte sin enviar.</span>
+                    </div>
+                    <button class="btn btn-sm fw-bold" style="background:var(--osla-orange);color:#fff;"
+                            onclick="showSection('section-parte')">
+                        <i class="bi bi-arrow-right me-1"></i>Continuar
+                    </button>
+                </div>
+            </div>
+            <div class="col-12 col-md-6" onclick="showSection('section-parte')">
+                <div class="menu-card">
+                    <i class="bi bi-clipboard-check-fill fs-1 text-warning mb-2 d-block"></i>
+                    <h4 class="text-white">NUEVO PARTE</h4>
+                    <p class="text-muted small">Cerrar trabajo realizado</p>
+                </div>
+            </div>
+            <div class="col-12 col-md-6" onclick="showSection('section-agenda')">
+                <div class="menu-card">
+                    <i class="bi bi-calendar-week fs-1 text-white mb-2 d-block"></i>
+                    <h4 class="text-white">MI AGENDA</h4>
+                    <p class="text-muted small">Ver calendario y citas</p>
+                </div>
+            </div>
+            <div class="col-12 col-md-6" onclick="showSection('section-analytics')">
+                <div class="menu-card">
+                    <i class="bi bi-graph-up-arrow fs-1 text-info mb-2 d-block"></i>
+                    <h4 class="text-white">MIS ANALÍTICAS</h4>
+                    <p class="text-muted small">Estadísticas y rendimiento</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="section-parte" class="d-none" style="max-width: 900px; margin: auto;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="text-warning fw-bold m-0 fs-4">Parte de Trabajo</h3>
+                <button class="btn btn-outline-secondary btn-sm px-3" onclick="showSection('home-menu')">Atrás</button>
+            </div>
+            <form action="/save_report" method="POST" enctype="multipart/form-data"
+                class="card bg-dark border-secondary p-3 p-md-4">
+
+                <div class="mb-3 p-3 rounded" style="background: #1f1f1f; border-left: 4px solid var(--osla-orange);">
+                    <label class="form-label text-warning fw-bold mb-2 small">VINCULAR CITA (OPCIONAL)</label>
+                    <select name="linked_task_id" id="linkedTaskSelect" class="form-select form-select-lg"
+                        onchange="fillFromTask(this)">
+                        <option value="none" selected>Nuevo parte (Sin cita)</option>
+                        {% for task in pending_tasks %}
+                        <option value="{{ task.id }}" data-client="{{ task.client_name }}"
+                            data-date="{{ task.date.strftime('%Y-%m-%d') }}" data-time="{{ task.start_time }}"
+                            data-service="{{ task.service_type }}" data-desc="{{ task.description }}">
+                            {{ task.date.strftime('%d/%m') }} - {{ task.client_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- ===== REGISTRO DE TIEMPOS (4 HITOS) ===== -->
+                <div class="mb-3 p-3 rounded" style="background:#0d0d0d; border:2px solid #333;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <label class="form-label fw-bold mb-0 small d-flex align-items-center gap-2"
+                               style="color:var(--osla-orange); letter-spacing:1px; text-transform:uppercase;">
+                            <i class="bi bi-clock-history"></i> Registro de Tiempos
+                        </label>
+                        <small id="draft-save-status" class="text-muted" style="font-size:0.72rem;"></small>
+                    </div>
+                    <div class="row g-2">
+                        <!-- 1. Inicio transporte -->
+                        <div class="col-6 col-md-3">
+                            <div class="p-2 rounded text-center" style="background:#161616; border:1px solid #0dcaf0;">
+                                <small class="d-block fw-bold mb-2" style="color:#0dcaf0; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.5px;">
+                                    <i class="bi bi-car-front-fill me-1"></i>Inicio Transporte
+                                </small>
+                                <div id="ts-display-1" class="fw-bold mb-2"
+                                     style="font-family:'Courier New',monospace; font-size:1.6rem; color:#555; letter-spacing:3px; min-height:38px;">
+                                    --:--
+                                </div>
+                                <button type="button" class="btn btn-sm w-100 fw-bold"
+                                        style="background:#0dcaf0; color:#000; font-size:0.78rem;"
+                                        onclick="stampTime('parte_transport_start','ts-display-1')">
+                                    <i class="bi bi-stopwatch me-1"></i>Registrar
+                                </button>
+                                <input type="hidden" name="parte_transport_start" id="parte_transport_start">
+                            </div>
+                        </div>
+                        <!-- 2. Hora llegada -->
+                        <div class="col-6 col-md-3">
+                            <div class="p-2 rounded text-center" style="background:#161616; border:1px solid #6f42c1;">
+                                <small class="d-block fw-bold mb-2" style="color:#a78bfa; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.5px;">
+                                    <i class="bi bi-geo-alt-fill me-1"></i>Hora de Llegada
+                                </small>
+                                <div id="ts-display-2" class="fw-bold mb-2"
+                                     style="font-family:'Courier New',monospace; font-size:1.6rem; color:#555; letter-spacing:3px; min-height:38px;">
+                                    --:--
+                                </div>
+                                <button type="button" class="btn btn-sm w-100 fw-bold"
+                                        style="background:#6f42c1; color:#fff; font-size:0.78rem;"
+                                        onclick="stampTime('parte_arrival','ts-display-2')">
+                                    <i class="bi bi-stopwatch me-1"></i>Registrar
+                                </button>
+                                <input type="hidden" name="parte_arrival" id="parte_arrival">
+                            </div>
+                        </div>
+                        <!-- 3. Inicio trabajo -->
+                        <div class="col-6 col-md-3">
+                            <div class="p-2 rounded text-center" style="background:#161616; border:1px solid var(--osla-orange);">
+                                <small class="d-block fw-bold mb-2" style="color:var(--osla-orange); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.5px;">
+                                    <i class="bi bi-tools me-1"></i>Inicio Trabajo
+                                </small>
+                                <div id="ts-display-3" class="fw-bold mb-2"
+                                     style="font-family:'Courier New',monospace; font-size:1.6rem; color:#555; letter-spacing:3px; min-height:38px;">
+                                    --:--
+                                </div>
+                                <button type="button" class="btn btn-sm w-100 fw-bold"
+                                        style="background:var(--osla-orange); color:#fff; font-size:0.78rem;"
+                                        onclick="stampTime('parte_work_start','ts-display-3')">
+                                    <i class="bi bi-stopwatch me-1"></i>Registrar
+                                </button>
+                                <input type="hidden" name="parte_work_start" id="parte_work_start">
+                            </div>
+                        </div>
+                        <!-- 4. Fin trabajo -->
+                        <div class="col-6 col-md-3">
+                            <div class="p-2 rounded text-center" style="background:#161616; border:1px solid #198754;">
+                                <small class="d-block fw-bold mb-2" style="color:#5cb85c; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.5px;">
+                                    <i class="bi bi-check-circle-fill me-1"></i>Fin Trabajo
+                                </small>
+                                <div id="ts-display-4" class="fw-bold mb-2"
+                                     style="font-family:'Courier New',monospace; font-size:1.6rem; color:#555; letter-spacing:3px; min-height:38px;">
+                                    --:--
+                                </div>
+                                <button type="button" class="btn btn-sm w-100 fw-bold"
+                                        style="background:#198754; color:#fff; font-size:0.78rem;"
+                                        onclick="stampTime('parte_work_end','ts-display-4')">
+                                    <i class="bi bi-stopwatch me-1"></i>Registrar
+                                </button>
+                                <input type="hidden" name="parte_work_end" id="parte_work_end">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Hidden compat fields para save_report -->
+                    <input type="hidden" name="entry_time" id="fieldEntryTime">
+                    <input type="hidden" name="exit_time" id="fieldExitTime">
+                    <input type="hidden" name="work_duration" id="workDurationInput">
+                </div>
+                <!-- ===== FIN REGISTRO DE TIEMPOS =====-->
+
+                <!-- ===== INFO CITA VINCULADA (auto-fill, no editable) ===== -->
+                <div id="linked-cita-header" class="d-none mb-3 p-3 rounded"
+                     style="background:#111; border-left:4px solid var(--osla-orange);">
+                    <div class="small fw-bold text-warning mb-2" style="text-transform:uppercase; letter-spacing:1px;">
+                        <i class="bi bi-link-45deg me-1"></i>Cita vinculada
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-12 col-sm-4">
+                            <div class="small text-muted mb-1">Cliente</div>
+                            <div class="fw-bold text-white" id="lch-client">—</div>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <div class="small text-muted mb-1">Tipo de Servicio</div>
+                            <div class="fw-bold" style="color:var(--osla-orange);" id="lch-service">—</div>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <div class="small text-muted mb-1">Fecha</div>
+                            <div class="fw-bold text-info" id="lch-date">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-md-8 position-relative">
+                        <label class="form-label">CLIENTE</label>
+                        <input type="text" name="client_name" id="fieldClient" class="form-control" required
+                            placeholder="Buscar cliente..." autocomplete="off">
+                        <div id="listClient" class="suggestions-list"></div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">TIPO SERVICIO</label>
+                        <select name="service_type" id="fieldService" class="form-select">
+                            {% for s in all_service_types %}
+                            <option value="{{ s.name }}">{{ s.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">FECHA</label>
+                        <input type="date" name="date" id="fieldDate" class="form-control" value="{{ today_date }}"
+                            required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">TRABAJO REALIZADO <span class="text-muted fw-normal small">(opcional)</span></label>
+                    <textarea name="description" id="fieldDescription" class="form-control" rows="4"
+                        placeholder="Describa la solución..."></textarea>
+                </div>
+
+                <div class="p-3 mb-3 rounded" style="background: #161616; border: 1px dashed #666;">
+                    <label class="text-white fw-bold small mb-2 d-block"><i class="bi bi-box-seam me-2"></i>PIEZAS /
+                        STOCK</label>
+                    <small class="text-muted mb-3 d-block">Puede añadir múltiples artículos con diferentes acciones (usar/retirar/devolver)</small>
+                    <div id="stockItemsContainer">
+                        <div class="row g-2 mb-2 stock-item-row">
+                            <div class="col-5">
+                                <div class="stock-search-wrapper position-relative">
+                                    <input type="text" class="form-control stock-search-input"
+                                           placeholder="Buscar pieza..." autocomplete="off">
+                                    <input type="hidden" name="stock_item_id[]" class="stock-id-input" value="">
+                                    <div class="stock-suggestions-list suggestions-list"></div>
+                                    <small class="stock-selected-name text-success d-block mt-1" style="min-height:1rem;"></small>
+                                </div>
+                            </div>
+                            <div class="col-2">
+                                <input type="number" name="stock_quantity[]" class="form-control" min="0" value="0"
+                                    placeholder="Cant.">
+                            </div>
+                            <div class="col-3">
+                                <select name="stock_action[]" class="form-select">
+                                    <option value="usar">Usar</option>
+                                    <option value="retirar">Retirar</option>
+                                    <option value="devolver">Devolver</option>
+                                </select>
+                            </div>
+                            <div class="col-2">
+                                <button type="button" class="btn btn-success btn-sm w-100" onclick="addStockItem()">
+                                    <i class="bi bi-plus-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <input type="text" name="parts_text" class="form-control"
+                            placeholder="Notas adicionales / Piezas retiradas...">
+                    </div>
+                </div>
+
+                <!-- NUEVA SECCIÓN: ARCHIVOS ADJUNTOS -->
+                <div class="mb-3 p-3 rounded" style="background: #161616; border: 1px dashed #666;">
+                    <label class="text-white fw-bold small mb-2 d-block">
+                        <i class="bi bi-paperclip me-2"></i>ARCHIVOS ADJUNTOS (OPCIONAL)
+                    </label>
+                    <small class="text-muted d-block mb-2">Máximo 16MB por archivo. Formatos permitidos: PNG, JPG, PDF,
+                        DOC, TXT</small>
+
+                    <div class="file-upload-area" id="fileUploadArea"
+                        onclick="document.getElementById('fileInput').click();">
+                        <i class="bi bi-cloud-upload fs-1 text-muted mb-2"></i>
+                        <p class="text-muted mb-0">Click para seleccionar archivos o arrastra aquí</p>
+                        <input type="file" id="fileInput" name="attachments" multiple
+                            accept=".png,.jpg,.jpeg,.gif,.pdf,.doc,.docx,.txt" style="display: none;"
+                            onchange="handleFileSelect(event)">
+                    </div>
+
+                    <div id="fileList" class="file-list"></div>
+                </div>
+
+                <!-- ========== SECCIÓN DE FIRMA DIGITAL ========== -->
+                <div class="mb-4 p-3 rounded" style="background: #161616; border: 2px solid var(--osla-orange);">
+                    <label class="text-white fw-bold mb-2 d-block">
+                        <i class="bi bi-pen-fill me-2"></i>FIRMA DEL CLIENTE *
+                        <span class="badge bg-danger ms-2">OBLIGATORIO</span>
+                    </label>
+                    <small class="text-muted d-block mb-3">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Solicite al cliente que firme en el recuadro blanco para confirmar la asistencia y conformidad
+                        con el
+                        trabajo realizado.
+                    </small>
+
+                    <!-- Nombre del firmante -->
+                    <div class="mb-3">
+                        <label class="form-label text-white">Nombre completo del firmante *</label>
+                        <input type="text" name="signature_name" id="signatureName" class="form-control" required
+                            placeholder="Ej: Juan García Pérez">
+                    </div>
+
+                    <!-- Canvas de firma -->
+                    <div class="signature-container bg-white rounded p-2 mb-2">
+                        <canvas id="signaturePadMain" class="signature-canvas" width="600" height="200"></canvas>
+                    </div>
+
+                    <!-- Campo oculto para guardar la firma en base64 -->
+                    <input type="hidden" name="signature_data" id="signatureDataInput">
+
+                    <!-- Botones de control -->
+                    <div class="d-flex gap-2 mb-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearMainSignature()">
+                            <i class="bi bi-eraser me-1"></i>Limpiar Firma
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-info" onclick="testMainSignature()">
+                            <i class="bi bi-eye me-1"></i>Verificar Firma
+                        </button>
+                    </div>
+
+                    <!-- Área de previsualización -->
+                    <div id="mainSignaturePreview" class="mt-2" style="display: none;">
+                        <p class="small text-success mb-2">
+                            <i class="bi bi-check-circle me-1"></i>Firma capturada correctamente
+                        </p>
+                        <img id="mainSignaturePreviewImg" class="border border-success rounded"
+                            style="max-width: 100%; height: auto; background: white;">
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-2">
+                    <button type="button" class="btn btn-outline-warning flex-fill fw-bold"
+                            onclick="saveDraft(true)">
+                        <i class="bi bi-floppy me-2"></i>Guardar borrador
+                    </button>
+                    <button type="submit" class="btn-osla flex-fill" style="width:auto; padding:12px 20px;">
+                        <i class="bi bi-send-fill me-2"></i>Enviar parte
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="section-agenda" class="d-none" style="max-width: 1400px; margin: auto;">
+            <div class="d-flex justify-content-between mb-3 align-items-center flex-wrap gap-2">
+                <h3 class="text-white fw-bold m-0 fs-4">Mi Calendario</h3>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-warning btn-sm fw-bold" data-bs-toggle="modal"
+                        data-bs-target="#modalNewAppointmentTech">
+                        <i class="bi bi-calendar-plus-fill me-1"></i> Nueva Cita
+                    </button>
+                    <button class="btn btn-info btn-sm fw-bold" data-bs-toggle="modal"
+                        data-bs-target="#modalNewRemoteTech"
+                        title="Agendar asistencia remota">
+                        <i class="bi bi-telephone-fill me-1"></i> Asistencia Remota
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm px-3"
+                        onclick="showSection('home-menu')">Atrás</button>
+                </div>
+            </div>
+
+            <!-- FILTROS POR TIPO DE SERVICIO -->
+            <div class="filter-group mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <small class="text-muted fw-bold">FILTRAR POR TIPO DE SERVICIO</small>
+                    <button class="btn btn-outline-light btn-sm" onclick="checkAllTechFilters()">
+                        <i class="bi bi-check-all me-1"></i> Todos
+                    </button>
+                </div>
+                <div class="btn-group-sm d-flex flex-wrap gap-2" role="group">
+                    {% for svc in all_service_types %}
+                    <input type="checkbox" class="btn-check tech-filter-cb" id="tech-filter-{{ svc.id }}"
+                        value="{{ svc.name }}" checked onchange="updateTechFilters()">
+                    <label class="btn btn-outline-custom flex-grow-1" for="tech-filter-{{ svc.id }}"
+                        data-color="{{ svc.color }}">
+                        {{ svc.name }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Botón para mostrar/ocultar lista de tareas -->
+            <div class="d-flex justify-content-end mb-2">
+                <button class="btn btn-sm btn-outline-light" id="toggleTaskListBtn" onclick="toggleTaskList()" title="Mostrar/ocultar lista de tareas">
+                    <i class="bi bi-layout-sidebar-reverse me-1"></i> Mostrar lista de tareas
+                </button>
+            </div>
+
+            <div class="row" id="techCalendarRow">
+                <div class="col-12" id="calendarCol">
+                    <div id="calendar"></div>
+                </div>
+                <div class="col-lg-3 d-none" id="taskListCol">
+                    <div class="card bg-dark border-secondary mt-3 mt-lg-0">
+                        <div class="card-header bg-secondary text-white">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="mb-0 small"><i class="bi bi-list-task me-2"></i>Mis Tareas</h6>
+                                <button class="btn btn-sm btn-close btn-close-white" onclick="toggleTaskList()" title="Ocultar lista"></button>
+                            </div>
+                            <div class="btn-group btn-group-sm w-100" role="group">
+                                <input type="radio" class="btn-check" name="techTaskStatusFilter" id="techFilterTodas" value="todas" checked onchange="renderTaskList()">
+                                <label class="btn btn-outline-secondary" for="techFilterTodas" style="font-size:0.72rem;padding:3px 8px;">Todas</label>
+                                <input type="radio" class="btn-check" name="techTaskStatusFilter" id="techFilterPendientes" value="pendientes" onchange="renderTaskList()">
+                                <label class="btn btn-outline-warning" for="techFilterPendientes" style="font-size:0.72rem;padding:3px 8px;">Pendientes</label>
+                                <input type="radio" class="btn-check" name="techTaskStatusFilter" id="techFilterCompletadas" value="completadas" onchange="renderTaskList()">
+                                <label class="btn btn-outline-success" for="techFilterCompletadas" style="font-size:0.72rem;padding:3px 8px;">Completadas</label>
+                            </div>
+                        </div>
+                        <div class="card-body p-1">
+                            <div id="taskListContainer" class="task-list-container" style="max-height: 580px; overflow-y: auto;">
+                                <div class="text-center text-muted py-3">Cargando...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAREAS SIN ASIGNAR -->
+            <div class="card bg-dark border-danger border-2 mt-4">
+                <div class="card-header bg-danger bg-opacity-20 border-danger d-flex justify-content-between align-items-center">
+                    <h5 class="card-title text-danger mb-0">
+                        <i class="bi bi-exclamation-circle-fill me-2"></i>Tareas Pendientes por Asignar
+                    </h5>
+                    <span class="badge bg-danger rounded-pill" id="unassignedCountBadge" style="display:none; font-size:0.9rem;"></span>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Estas tareas no tienen técnico asignado. Puedes completarlas directamente desde aquí.
+                    </p>
+                    <div id="techUnassignedTasksList" style="max-height: 400px; overflow-y: auto;">
+                        <div class="text-muted text-center py-3">
+                            <i class="bi bi-inbox me-2"></i>Cargando...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN ANALÍTICAS -->
+        <div id="section-analytics" class="d-none" style="max-width: 1400px; margin: auto;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="text-info fw-bold m-0 fs-4"><i class="bi bi-graph-up me-2"></i>Mis Analíticas</h3>
+                <button class="btn btn-outline-secondary btn-sm px-3" onclick="showSection('home-menu')">Atrás</button>
+            </div>
+
+            <!-- Selector de Período -->
+            <div class="card bg-dark border-secondary p-3 mb-4">
+                <label class="form-label fw-bold text-info">PERÍODO DE ANÁLISIS</label>
+                <select id="periodSelector" class="form-select" onchange="loadAnalytics()">
+                    <option value="7">Últimos 7 días</option>
+                    <option value="30" selected>Últimos 30 días</option>
+                    <option value="90">Últimos 3 meses</option>
+                    <option value="180">Últimos 6 meses</option>
+                    <option value="365">Último año</option>
+                    <option value="all">Todo el historial</option>
+                </select>
+            </div>
+
+            <!-- Tarjetas de Resumen -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4 col-6">
+                    <div class="card bg-dark border-secondary p-3 text-center">
+                        <i class="bi bi-clipboard-check fs-1 text-success mb-2"></i>
+                        <h2 class="text-white fw-bold mb-0" id="totalServices">0</h2>
+                        <small class="text-muted">Servicios Totales</small>
+                    </div>
+                </div>
+                <div class="col-md-4 col-6">
+                    <div class="card bg-dark border-secondary p-3 text-center">
+                        <i class="bi bi-stopwatch fs-1 text-info mb-2"></i>
+                        <h2 class="text-info fw-bold mb-0" id="totalHoursWorked">0h</h2>
+                        <small class="text-muted">Horas Trabajadas</small>
+                    </div>
+                </div>
+                <div class="col-md-4 col-6">
+                    <div class="card bg-dark border-secondary p-3 text-center">
+                        <i class="bi bi-clock-history fs-1 text-danger mb-2"></i>
+                        <h2 class="text-white fw-bold mb-0" id="avgTime">0h</h2>
+                        <small class="text-muted">Tiempo Promedio</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="row g-3 mb-4">
+                <!-- Distribución de Servicios -->
+                <div class="col-lg-12">
+                    <div class="card bg-dark border-secondary p-4">
+                        <h5 class="text-white fw-bold mb-3"><i class="bi bi-pie-chart me-2"></i>Distribución de
+                            Servicios</h5>
+                        <canvas id="serviceDistributionChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+
+        <!-- SECCIÓN INCIDENCIAS -->
+
+
+    </div><!-- /container-fluid -->
+
+    <!-- MODALES -->
+    <div class="modal fade" id="modalEventAction" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div class="modal-content bg-dark text-white border-warning">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" id="evtTitle">Detalles Cita</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- INFORMACIÓN DEL CLIENTE (PROMINENTE) -->
+                    <div class="card bg-dark border-warning mb-3">
+                        <div class="card-header bg-warning text-dark border-0 py-2">
+                            <h6 class="mb-0 fw-bold">
+                                <i class="bi bi-person-circle me-2"></i>
+                                Información del Cliente
+                            </h6>
+                        </div>
+                        <div class="card-body bg-black" id="evtClientInfo">
+                            <div class="text-center text-muted py-2">
+                                <i class="bi bi-hourglass-split"></i> Cargando información...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estado del trabajo -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span id="evtStatus" class="badge p-2"></span>
+                    </div>
+
+                    <!-- Descripción del trabajo -->
+                    <h6 class="text-warning fw-bold mb-2">Descripción del Trabajo:</h6>
+                    <p class="small text-muted bg-black p-3 rounded border border-secondary" id="evtDesc"></p>
+
+                    <input type="hidden" id="evtId">
+                    <input type="hidden" id="evtClientId">
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-danger flex-grow-1"
+                        onclick="performTaskAction('delete')">Eliminar</button>
+                    <button type="button" class="btn btn-outline-warning flex-grow-1"
+                        onclick="openEditTechModal()">Editar</button>
+                    <button type="button" class="btn btn-success flex-grow-1"
+                        onclick="performTaskAction('complete')">
+                        <i class="bi bi-file-earmark-text-fill me-1"></i>Hacer parte
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalEditAppointmentTech" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <form action="/edit_appointment/0" method="POST" id="formEditApptTech"
+                class="modal-content bg-dark border-warning text-white">
+                <div class="modal-header border-0">
+                    <h5>Editar Cita</h5><button type="button" class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="max-height: 55vh; overflow-y: auto;">
+                    <div class="mb-3 position-relative">
+                        <label class="form-label">Cliente</label>
+                        <input type="text" name="client_name" id="editTechClientInput" class="form-control" required
+                            autocomplete="off">
+                        <div id="editTechClientList" class="suggestions-list"></div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-7"><label class="form-label">Fecha</label><input type="date" name="date"
+                                id="editTechDate" class="form-control" required></div>
+                        <div class="col-5"><label class="form-label">Hora</label><input type="time" name="time"
+                                id="editTechTime" class="form-control" required></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipo Servicio</label>
+                        <select name="service_type" id="editTechService" class="form-select" required>
+                            {% for s in all_service_types %}
+                            <option value="{{ s.name }}">{{ s.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3"><label class="form-label">Notas</label><textarea name="notes" id="editTechNotes"
+                            class="form-control" rows="3"></textarea></div>
+                </div>
+                <div class="modal-footer border-0"><button type="submit" class="btn btn-warning w-100">Guardar
+                        Cambios</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Nueva Cita (Técnico) -->
+    <div class="modal fade" id="modalNewAppointmentTech" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content bg-dark border-warning text-white">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">Nueva Cita</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="formNewAppointmentTech" onsubmit="submitNewAppointment(event)">
+                    <div class="modal-body" style="max-height: 55vh; overflow-y: auto;">
+                        <div class="mb-3 position-relative">
+                            <label class="form-label">Cliente</label>
+                            <input type="text" name="client_name" id="modalFieldClient" class="form-control" required
+                                autocomplete="off">
+                            <div id="modalListClient" class="suggestions-list"></div>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-7">
+                                <label class="form-label">Fecha</label>
+                                <input type="date" name="date" id="modalDateInput" class="form-control" required>
+                            </div>
+                            <div class="col-5">
+                                <label class="form-label">Hora Inicio</label>
+                                <input type="time" name="start_time" id="modalStartTime" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Hora Fin (Estimada) - Opcional</label>
+                            <input type="time" name="end_time" id="modalEndTime" class="form-control">
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>Campo opcional - puede dejarse vacío
+                            </small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tipo de Servicio</label>
+                            <select name="service_type_id" id="modalServiceType" class="form-select" required>
+                                {% for s in all_service_types %}
+                                <option value="{{ s.id }}">{{ s.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descripción/Notas</label>
+                            <textarea name="description" class="form-control" rows="3"
+                                placeholder="Detalles de la cita..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="submit" class="btn btn-warning w-100 fw-bold">
+                            <i class="bi bi-calendar-plus me-1"></i>Agendar Cita
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalChangePassword" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <form action="/change_password" method="POST" class="modal-content bg-dark border-light">
+                <div class="modal-header border-0">
+                    <h5 class="text-white">Cambiar Mi Contraseña</h5><button type="button"
+                        class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Contraseña Actual</label>
+                        <input type="password" name="current_password" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nueva Contraseña</label>
+                        <input type="password" name="new_password" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-0"><button type="submit"
+                        class="btn btn-light w-100 fw-bold">Actualizar</button></div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Modal: Completar Parte de Trabajo -->
+    <div class="modal fade" id="modalCompleteTask" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">
+                        <i class="bi bi-clipboard-check-fill me-2 text-success"></i>
+                        Completar Parte de Trabajo
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="max-height: 55vh; overflow-y: auto;">
+                    <input type="hidden" id="completeTaskId">
+
+                    <!-- Información de la tarea -->
+                    <div class="alert alert-info">
+                        <strong>Cliente:</strong> <span id="completeClientName"></span><br>
+                        <strong>Servicio:</strong> <span id="completeServiceType"></span>
+                    </div>
+
+                    <!-- Descripción del trabajo -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Descripción del Trabajo Realizado *</label>
+                        <textarea id="completeDescription" class="form-control" rows="4" required
+                            placeholder="Describe detalladamente el trabajo realizado..."></textarea>
+                    </div>
+
+                    <!-- Material/Piezas -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Material Utilizado o Retirado</label>
+                        <select id="completeStockItem" class="form-select mb-2">
+                            <option value="">-- No se usó material --</option>
+                            {% if stock_categories %}
+                                {% for cat in stock_categories %}
+                                    {% if cat.subcategories %}
+                                        {% for subcat in cat.subcategories %}
+                                            {% set subcat_items = stock_items | selectattr('category_id', 'equalto', subcat.id) | list %}
+                                            {% if subcat_items %}
+                                            <optgroup label="{{ cat.name }} › {{ subcat.name }}">
+                                                {% for item in subcat_items %}
+                                                <option value="{{ item.id }}">{{ item.name }} (Stock: {{ item.quantity }})</option>
+                                                {% endfor %}
+                                            </optgroup>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% set cat_items = stock_items | selectattr('category_id', 'equalto', cat.id) | list %}
+                                        {% if cat_items %}
+                                        <optgroup label="{{ cat.name }}">
+                                            {% for item in cat_items %}
+                                            <option value="{{ item.id }}">{{ item.name }} (Stock: {{ item.quantity }})</option>
+                                            {% endfor %}
+                                        </optgroup>
+                                        {% endif %}
+                                    {% else %}
+                                        {% set cat_items = stock_items | selectattr('category_id', 'equalto', cat.id) | list %}
+                                        {% if cat_items %}
+                                        <optgroup label="{{ cat.name }}">
+                                            {% for item in cat_items %}
+                                            <option value="{{ item.id }}">{{ item.name }} (Stock: {{ item.quantity }})</option>
+                                            {% endfor %}
+                                        </optgroup>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% set uncategorized = stock_items | selectattr('category_id', 'none') | list %}
+                                {% if uncategorized %}
+                                <optgroup label="Sin categoría">
+                                    {% for item in uncategorized %}
+                                    <option value="{{ item.id }}">{{ item.name }} (Stock: {{ item.quantity }})</option>
+                                    {% endfor %}
+                                </optgroup>
+                                {% endif %}
+                            {% else %}
+                                {% for item in stock_items %}
+                                <option value="{{ item.id }}">{{ item.name }} (Stock: {{ item.quantity }})</option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+
+                        <div id="stockDetailsDiv" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label small">Cantidad</label>
+                                    <input type="number" id="completeStockQuantity" class="form-control" min="1"
+                                        value="1">
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label small">Acción</label>
+                                    <select id="completeStockAction" class="form-select">
+                                        <option value="used">Utilizado</option>
+                                        <option value="removed">Retirado</option>
+                                        <option value="added">Añadido</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notas adicionales -->
+                    <div class="mb-3">
+                        <label class="form-label">Notas o Material Adicional</label>
+                        <input type="text" id="completeParts" class="form-control"
+                            placeholder="Otras piezas, observaciones...">
+                    </div>
+
+                    <!-- Archivos adjuntos -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Fotos y Documentos</label>
+                        <div id="modalFileUploadArea" class="border border-secondary rounded p-3 text-center bg-black"
+                            onclick="document.getElementById('modalFileInput').click()" style="cursor: pointer;">
+                            <i class="bi bi-cloud-upload fs-1 text-warning"></i>
+                            <p class="mb-0 mt-2">Haz clic o arrastra archivos aquí</p>
+                            <small class="text-muted">PNG, JPG, PDF, DOC - Máximo 16MB</small>
+                        </div>
+                        <input type="file" id="modalFileInput" multiple accept=".png,.jpg,.jpeg,.pdf,.doc,.docx"
+                            style="display: none;" onchange="handleModalFileSelect(event)">
+                        <div id="modalFileList" class="mt-2"></div>
+                    </div>
+
+                    <hr class="border-secondary">
+
+                    <!-- FIRMA DIGITAL -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-warning">
+                            <i class="bi bi-pen-fill me-2"></i>FIRMA DEL CLIENTE *
+                            <span class="badge bg-danger ms-2">OBLIGATORIO</span>
+                        </label>
+                        <small class="text-muted d-block mb-2">
+                            Solicite al cliente que firme en el recuadro para confirmar la asistencia y conformidad
+                        </small>
+
+                        <!-- Nombre del firmante -->
+                        <div class="mb-3">
+                            <label class="form-label">Nombre completo del firmante *</label>
+                            <input type="text" id="signatureClientName" class="form-control" required
+                                placeholder="Nombre y apellidos del cliente que firma">
+                        </div>
+
+                        <!-- Canvas de firma -->
+                        <div class="signature-container bg-white rounded p-2">
+                            <canvas id="signaturePad" class="signature-canvas"></canvas>
+                        </div>
+
+                        <div class="d-flex gap-2 mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearSignature()">
+                                <i class="bi bi-eraser me-1"></i>Limpiar Firma
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-info" onclick="previewSignature()">
+                                <i class="bi bi-eye me-1"></i>Vista Previa
+                            </button>
+                        </div>
+
+                        <div id="signaturePreview" class="mt-3" style="display: none;">
+                            <p class="small text-info mb-2">
+                                <i class="bi bi-check-circle me-1"></i>Vista previa de la firma:
+                            </p>
+                            <img id="signaturePreviewImg" class="border border-info rounded"
+                                style="max-width: 100%; height: auto; background: white;">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" onclick="saveTaskCompletion()">
+                        <i class="bi bi-check-circle-fill me-1"></i>Completar y Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal: Asistencia Remota (Técnico) -->
+    <div class="modal fade" id="modalTechRemoteAssistance" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div class="modal-content bg-dark text-white border-info">
+                <div class="modal-header border-info bg-info bg-opacity-10 py-2">
+                    <h5 class="modal-title">
+                        <i class="bi bi-wifi me-2 text-info"></i>
+                        Asistencia Remota — <span id="techRmtClientTitle">Cliente</span>
+                        <span class="badge bg-info text-dark ms-2" style="font-size:0.7rem;">📡 REMOTO</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="techRmtTaskId">
+                    <input type="hidden" id="techRmtClientId">
+
+                    <!-- Estado y fecha -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span id="techRmtStatusBadge" class="badge bg-warning text-dark" style="font-size:0.9rem; padding:6px 12px;">Pendiente</span>
+                        <small class="text-info fw-bold" id="techRmtDateLabel"></small>
+                    </div>
+
+                    <!-- Ficha cliente con badge de soporte -->
+                    <div id="techRmtClientCard" class="card bg-secondary bg-opacity-10 border-secondary mb-3 p-2" style="display:none;">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <span class="text-white small fw-bold" id="techRmtClientCardName">—</span>
+                                <div class="text-muted" style="font-size:0.75rem;">
+                                    <i class="bi bi-telephone me-1"></i><span id="techRmtClientCardPhone">—</span>
+                                    &nbsp;·&nbsp;
+                                    <i class="bi bi-envelope me-1"></i><span id="techRmtClientCardEmail">—</span>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="badge bg-success" id="techRmtSupportBadge" style="display:none;"><i class="bi bi-shield-check me-1"></i>Con Soporte</span>
+                                <span class="badge bg-danger" id="techRmtNoSupportBadge" style="display:none;"><i class="bi bi-shield-x me-1"></i>Sin Soporte</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Horas de soporte mensual -->
+                    <div id="techRmtHoursSection" class="card bg-secondary bg-opacity-10 border-secondary mb-3 p-2" style="display:none;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="text-muted"><i class="bi bi-clock-history me-1"></i>Horas de soporte este mes</small>
+                            <small class="fw-bold text-info" id="techRmtHoursLabel">— / 5h</small>
+                        </div>
+                        <div class="progress" style="height:6px;">
+                            <div id="techRmtHoursBar" class="progress-bar" role="progressbar" style="width:0%;"></div>
+                        </div>
+                        <small id="techRmtHoursDetail" class="text-muted mt-1 d-block" style="font-size:0.7rem;"></small>
+                    </div>
+
+                    <!-- Registro de tiempo -->
+                    <div class="p-2 rounded mb-3" style="background:#0d1117; border:1px solid #30363d;">
+                        <small class="text-info fw-bold d-block mb-2"><i class="bi bi-clock me-1"></i>Registro de tiempo</small>
+                        <div class="row g-2 align-items-end">
+                            <div class="col-5">
+                                <label class="form-label small mb-1"><i class="bi bi-play-fill text-success me-1"></i>Hora inicio</label>
+                                <input type="time" id="techRmtStartTime" class="form-control form-control-sm bg-dark text-white border-secondary" oninput="updateTechRmtDuration()">
+                            </div>
+                            <div class="col-5">
+                                <label class="form-label small mb-1"><i class="bi bi-stop-fill text-danger me-1"></i>Hora fin</label>
+                                <input type="time" id="techRmtEndTime" class="form-control form-control-sm bg-dark text-white border-secondary" oninput="updateTechRmtDuration()">
+                            </div>
+                            <div class="col-2 text-center">
+                                <div id="techRmtDuration" class="fw-bold text-info" style="font-size:1rem;">—</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notas -->
+                    <div class="mb-2">
+                        <label class="form-label small mb-1"><i class="bi bi-sticky me-1"></i>Notas / Descripción</label>
+                        <textarea id="techRmtDescription" class="form-control bg-dark text-white border-secondary" rows="4"
+                            placeholder="Describe el trabajo realizado, incidencias, solución..."></textarea>
+                    </div>
+
+                    <!-- Aviso límite -->
+                    <div id="techRmtWarning" class="alert alert-warning py-1 px-2 small mb-0" style="display:none;">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                        <span id="techRmtWarningText">Límite mensual superado.</span>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary py-2 d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="techRmtDelete()">
+                        <i class="bi bi-trash me-1"></i>Eliminar
+                    </button>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-info btn-sm" onclick="techRmtSave(false)">
+                            <i class="bi bi-floppy me-1"></i>Guardar
+                        </button>
+                        <button type="button" class="btn btn-success btn-sm" onclick="techRmtSave(true)">
+                            <i class="bi bi-check-lg me-1"></i>Completar Asistencia
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Nueva Asistencia Remota (técnico) -->
+    <div class="modal fade" id="modalNewRemoteTech" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header border-secondary bg-info bg-opacity-10">
+                    <h5 class="modal-title"><i class="bi bi-wifi me-2 text-info"></i>Nueva Asistencia Remota</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info py-2 small mb-3">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Las asistencias remotas acumulan horas de soporte mensual (límite: 5h/mes). Se registrarán automáticamente a tu nombre.
+                    </div>
+
+                    <!-- Búsqueda de cliente -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small mb-1">Buscar Cliente <span class="text-danger">*</span></label>
+                        <div class="position-relative">
+                            <input type="text" id="techNewRmtClientSearch"
+                                class="form-control form-control-sm bg-dark text-white border-secondary"
+                                placeholder="Escriba nombre del cliente..." autocomplete="off">
+                            <div id="techNewRmtClientsList" class="suggestions-list"></div>
+                        </div>
+                    </div>
+
+                    <!-- Ficha del cliente -->
+                    <div id="techNewRmtClientCard" style="display:none;" class="card bg-secondary bg-opacity-10 border-info mb-3">
+                        <div class="card-body py-2 px-3">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <h6 class="card-title text-info mb-0" id="techNewRmtClientName">-</h6>
+                                <div>
+                                    <span class="badge bg-success" id="techNewRmtSupportBadge" style="display:none;"><i class="bi bi-shield-check me-1"></i>Con Soporte</span>
+                                    <span class="badge bg-danger" id="techNewRmtNoSupportBadge" style="display:none;"><i class="bi bi-shield-x me-1"></i>Sin Soporte</span>
+                                </div>
+                            </div>
+                            <div class="small text-muted">
+                                <i class="bi bi-telephone me-1"></i><span id="techNewRmtClientPhone">-</span>
+                                &nbsp;·&nbsp;
+                                <i class="bi bi-envelope me-1"></i><span id="techNewRmtClientEmail">-</span>
+                            </div>
+                            <!-- Barra horas mensuales -->
+                            <div id="techNewRmtHoursSection" style="display:none;" class="mt-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <small class="text-muted">Soporte remoto este mes</small>
+                                    <small id="techNewRmtHoursLabel" class="fw-bold">0h / 5h</small>
+                                </div>
+                                <div class="progress" style="height:6px;">
+                                    <div id="techNewRmtHoursBar" class="progress-bar" role="progressbar" style="width:0%; background:#06b6d4;"></div>
+                                </div>
+                                <div id="techNewRmtHoursWarning" style="display:none;" class="alert alert-warning py-1 px-2 mt-1 small">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>Este cliente ya ha consumido o superado su límite mensual de 5h.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="techNewRmtSelectedClientId">
+                    <input type="hidden" id="techNewRmtSelectedClientName">
+
+                    <!-- Fecha y horas -->
+                    <div class="row g-2">
+                        <div class="col-sm-4">
+                            <label class="form-label small mb-1">Fecha</label>
+                            <input type="date" id="techNewRmtDate" class="form-control form-control-sm bg-dark text-white border-secondary">
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="form-label small mb-1">Hora inicio</label>
+                            <input type="time" id="techNewRmtStartTime" class="form-control form-control-sm bg-dark text-white border-secondary">
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="form-label small mb-1">Hora fin <span class="text-muted" style="font-size:0.75rem;">(opcional)</span></label>
+                            <input type="time" id="techNewRmtEndTime" class="form-control form-control-sm bg-dark text-white border-secondary">
+                        </div>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="mt-3">
+                        <label class="form-label small mb-1">Descripción</label>
+                        <textarea id="techNewRmtDescription" class="form-control form-control-sm bg-dark text-white border-secondary" rows="3" placeholder="Describa brevemente el trabajo a realizar..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-info btn-sm" onclick="techSubmitNewRemote()" id="techNewRmtSubmitBtn">
+                        <i class="bi bi-plus-lg me-1"></i>Crear Asistencia Remota
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ====== TOAST NOTIFICATIONS (reemplaza alert() bloqueantes) ======
+        function showToast(msg, type = 'success', duration = 1200) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'osla-toast ' + type;
+            const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+            toast.innerHTML = `<span style="margin-right:8px;font-weight:bold;">${icon}</span>${msg}`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.transition = 'opacity 0.3s';
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 320);
+            }, duration);
+        }
+
+        // Auto-dismiss flash messages de Flask (1 segundo)
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.osla-flash').forEach(function(el) {
+                setTimeout(function() {
+                    el.style.transition = 'opacity 0.4s';
+                    el.style.opacity = '0';
+                    setTimeout(function() { el.remove(); }, 420);
+                }, 1000);
+            });
+        });
+
+        let calendar;
+        let _modalActionInstance;
+        function getModalAction() {
+            if (!_modalActionInstance) {
+                _modalActionInstance = new bootstrap.Modal(document.getElementById('modalEventAction'));
+            }
+            return _modalActionInstance;
+        }
+        const modalAction = {
+            show: function() { getModalAction().show(); },
+            hide: function() { getModalAction().hide(); }
+        };
+
+        // Almacén local de tareas para la lista
+        let cachedTasks = [];       // Eventos del rango visible del calendario (para referencia)
+        let allTasksCache = [];     // TODOS los eventos del técnico (para la lista lateral)
+        let currentSort = 'date';   // 'date' | 'alpha'
+        let selectedFiles = [];     // Array para almacenar archivos seleccionados
+        let _partePreloaded = false; // Flag: true cuando el parte se pre-rellena desde una cita del calendario
+        let _taskListVisible = false; // Flag: estado del panel lateral de tareas
+
+        // Carga TODOS los eventos (no solo el rango visible) para la lista lateral
+        function loadAllTasksForList() {
+            fetch('/api/tasks')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    allTasksCache = data.map(function(e) {
+                        return {
+                            id: String(e.id),
+                            title: e.title || '',
+                            start: e.start || '',
+                            color: e.backgroundColor || e.color || '#6c757d',
+                            extendedProps: {
+                                status: e.extendedProps ? e.extendedProps.status : (e.status || 'Pendiente'),
+                                client: e.extendedProps ? e.extendedProps.client : (e.client || ''),
+                                client_id: e.extendedProps ? e.extendedProps.client_id : null,
+                                service_type: e.extendedProps ? e.extendedProps.service_type : (e.service_type || ''),
+                                desc: e.extendedProps ? e.extendedProps.desc : '',
+                                has_attachments: e.extendedProps ? e.extendedProps.has_attachments : false,
+                                is_remote: e.extendedProps ? (e.extendedProps.is_remote || false) : false
+                            }
+                        };
+                    });
+                    renderTaskList();
+                })
+                .catch(function(err) {
+                    console.error('Error cargando todas las tareas:', err);
+                });
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('[id^="section-"], #home-menu').forEach(el => el.classList.add('d-none'));
+            const target = document.getElementById(id);
+            if (target) target.classList.remove('d-none');
+
+            // Inicializar o refrescar calendario
+            if (id === 'section-agenda') {
+                if (!calendar) {
+                    setTimeout(() => initCalendar(), 100);
+                } else {
+                    setTimeout(() => {
+                        try { calendar.updateSize(); calendar.refetchEvents(); } catch(e) {}
+                    }, 100);
+                }
+                setTimeout(() => loadTechUnassignedTasks(), 200);
+            }
+
+            // ✅ Inicializar firma + cargar draft cuando se muestra el parte
+            if (id === 'section-parte') {
+                setTimeout(() => { try { mainSignaturePad.init(); } catch(e) {} }, 100);
+                // Solo cargar draft si no hay datos pre-cargados desde una cita
+                if (!_partePreloaded) {
+                    setTimeout(() => loadDraft(), 200);
+                }
+                _partePreloaded = false;
+            }
+
+            // ✅ Al volver al menú principal, comprobar si hay borrador
+            if (id === 'home-menu') {
+                checkDraftNotice();
+            }
+
+            // Cargar analíticas cuando se muestra la sección
+            if (id === 'section-analytics') {
+                setTimeout(() => loadAnalytics(), 100);
+            }
+        }
+
+        function initCalendar() {
+            const isMobile = window.innerWidth < 768;
+            const calendarEl = document.getElementById('calendar');
+
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: isMobile ? 'listWeek' : 'dayGridMonth',
+                locale: 'es',
+                headerToolbar: {
+                    left: 'prev,next',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listWeek'
+                },
+                height: 'auto',
+                events: function(fetchInfo, successCallback, failureCallback) {
+                    fetch('/api/tasks')
+                        .then(function(res) { return res.json(); })
+                        .then(function(data) {
+                            var activeTypes = getTechActiveFilters();
+                            var filtered = data.filter(function(ev) {
+                                // ✅ Excluir citas sin técnico del calendario (solo aparecen en la lista)
+                                if (ev.extendedProps && ev.extendedProps.tech_id === null) return false;
+                                if (!ev.extendedProps && ev.tech_id === null) return false;
+                                var stype = ev.extendedProps ? ev.extendedProps.service_type : ev.service_type;
+                                return activeTypes.length === 0 || activeTypes.includes(stype);
+                            });
+                            successCallback(filtered);
+                        })
+                        .catch(failureCallback);
+                },
+                eventClick: handleEventClick,
+                dateClick: handleDateClick,
+                selectable: true,
+                eventDidMount: function (info) {
+                    if (info.backgroundColor) {
+                        info.el.style.backgroundColor = info.backgroundColor;
+                    }
+                    if (info.event.extendedProps.status === 'Completado') {
+                        info.el.style.opacity = '0.7';
+                        info.el.style.border = '2px solid #198754';
+                        // Añadir icono de check
+                        const title = info.el.querySelector('.fc-event-title');
+                        if (title) {
+                            title.innerHTML = '✓ ' + title.innerHTML;
+                        }
+                    }
+                },
+                eventsSet: function (events) {
+                    // Serializar EventApi para referencia local (solo rango visible)
+                    cachedTasks = events.map(function(e) {
+                        return {
+                            id: e.id,
+                            title: e.title,
+                            start: e.start ? e.start.toISOString() : '',
+                            color: e.backgroundColor || '#6c757d',
+                            extendedProps: {
+                                status: e.extendedProps.status,
+                                client: e.extendedProps.client,
+                                client_id: e.extendedProps.client_id,
+                                tech_name: e.extendedProps.tech_name,
+                                service_type: e.extendedProps.service_type,
+                                desc: e.extendedProps.desc,
+                                has_attachments: e.extendedProps.has_attachments
+                            }
+                        };
+                    });
+                    // Recargar TODOS los eventos para la lista (incluye completadas fuera del rango visible)
+                    loadAllTasksForList();
+                }
+            });
+            calendar.render();
+        }
+
+        // --- FILTROS POR TIPO DE SERVICIO ---
+        function getTechActiveFilters() {
+            const activeTypes = [];
+            document.querySelectorAll('.tech-filter-cb:checked').forEach(cb => {
+                activeTypes.push(cb.value);
+            });
+            return activeTypes;
+        }
+
+        function checkAllTechFilters() {
+            document.querySelectorAll('.tech-filter-cb').forEach(cb => {
+                cb.checked = true;
+            });
+            updateTechFilters();
+        }
+
+        function updateTechFilters() {
+            if (!calendar) return;
+            // refetchEvents() llama a la función events() que aplica getTechActiveFilters()
+            // loadAllTasksForList() se llama vía eventsSet automáticamente
+            calendar.refetchEvents();
+        }
+
+        function handleEventClick(info) {
+            const evt = info.event;
+            const props = evt.extendedProps || {};
+
+            // ── Si es asistencia remota, abrir modal específico ──────────
+            if (props.is_remote) {
+                openTechRemoteModal(evt.id, evt.title, props);
+                return;
+            }
+
+            document.getElementById('evtId').value = evt.id;
+            document.getElementById('evtTitle').innerText = evt.title;
+            document.getElementById('evtClientId').value = props.client_id || '';
+            document.getElementById('evtDesc').innerText = props.desc || 'Sin descripción';
+
+            const badge = document.getElementById('evtStatus');
+            const status = props.status;
+            badge.innerText = status;
+            badge.className = 'badge p-2 ' + (status === 'Completado' ? 'bg-success' : 'bg-warning text-dark');
+
+            // CARGAR INFORMACIÓN DEL CLIENTE
+            const clientInfoContainer = document.getElementById('evtClientInfo');
+            const clientId = props.client_id;
+
+            if (clientId) {
+                // Hacer petición al servidor para obtener información del cliente
+                fetch(`/api/client/${clientId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success && data.client) {
+                            const client = data.client;
+                            let html = `
+                                <div class="row g-3">
+                                    <div class="col-md-12 mb-2">
+                                        <h5 class="text-warning mb-1 fw-bold">${client.name}</h5>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <i class="bi bi-telephone-fill text-warning me-2" style="font-size: 1.1rem;"></i>
+                                            <strong class="text-white">Teléfono:</strong>
+                                        </div>
+                                        <a href="tel:${client.phone}" class="text-info fw-bold text-decoration-none d-block" style="font-size: 1.1rem;">
+                                            ${client.phone}
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <i class="bi bi-envelope-fill text-warning me-2" style="font-size: 1.1rem;"></i>
+                                            <strong class="text-white">Email:</strong>
+                                        </div>
+                                        <a href="mailto:${client.email}" class="text-info fw-bold text-decoration-none d-block" style="font-size: 1rem; word-break: break-all;">
+                                            ${client.email}
+                                        </a>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <i class="bi bi-geo-alt-fill text-warning me-2" style="font-size: 1.1rem;"></i>
+                                            <strong class="text-white">Dirección:</strong>
+                                        </div>
+                                        <span class="text-white fw-bold d-block" style="font-size: 1.05rem;">${client.address || '<em class=\"text-muted\">Sin dirección registrada</em>'}</span>
+                                        <div class="d-flex gap-2 mt-2">
+                                            ${(client.address || '').trim()
+                                                ? `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((client.address).trim())}" target="_blank" rel="noopener" class="btn btn-sm btn-warning fw-bold flex-fill"><i class="bi bi-geo-alt-fill me-1"></i>Abrir en Google Maps</a>`
+                                                : `<button class="btn btn-sm btn-secondary flex-fill" disabled title="No hay dirección registrada para este cliente"><i class="bi bi-geo-alt me-1"></i>Sin dirección</button>`
+                                            }
+                                        </div>
+                                    </div>
+                            `;
+
+                            if (client.link) {
+                                html += `
+                                    <div class="col-md-12 mt-2">
+                                        <a href="${client.link}" target="_blank" class="btn btn-warning fw-bold w-100">
+                                            <i class="bi bi-globe me-1"></i>Sitio Web
+                                        </a>
+                                    </div>
+                                `;
+                            }
+
+                            if (client.has_support) {
+                                html += `
+                                    <div class="col-md-12 mt-2">
+                                        <div class="alert alert-success py-2 px-3 mb-0 fw-bold" style="background-color: #28a745 !important; color: white !important; border: 2px solid #20c997;">
+                                            <i class="bi bi-shield-check me-1"></i>
+                                            <strong>Soporte Activo:</strong>
+                                            ${client.support_monday_friday ? 'L-V ' : ''}
+                                            ${client.support_saturday ? 'Sáb ' : ''}
+                                            ${client.support_sunday ? 'Dom' : ''}
+                                        </div>
+                                    </div>
+                                `;
+                            }
+
+                            if (client.notes) {
+                                html += `
+                                    <div class="col-md-12 mt-3 pt-2 border-top border-secondary">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <i class="bi bi-sticky text-warning me-2"></i>
+                                            <strong class="text-white">Notas:</strong>
+                                        </div>
+                                        <p class="text-white-50 mb-0" style="font-size: 0.95rem;">${client.notes}</p>
+                                    </div>
+                                `;
+                            }
+
+                            html += `</div>`;
+                            clientInfoContainer.innerHTML = html;
+                        } else {
+                            clientInfoContainer.innerHTML = `
+                                <div class="text-center text-muted py-2">
+                                    <i class="bi bi-exclamation-circle"></i> 
+                                    Cliente: ${props.client}
+                                    <br>
+                                    <small>Información no disponible</small>
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error cargando información del cliente:', err);
+                        clientInfoContainer.innerHTML = `
+                            <div class="text-center text-warning py-2">
+                                <i class="bi bi-exclamation-triangle"></i> 
+                                Error al cargar información del cliente
+                            </div>
+                        `;
+                    });
+            } else {
+                // Si no hay client_id, mostrar solo el nombre
+                clientInfoContainer.innerHTML = `
+                    <div class="text-center py-2">
+                        <h5 class="text-warning mb-0">${props.client}</h5>
+                        <small class="text-muted">Cliente no registrado en la base de datos</small>
+                    </div>
+                `;
+            }
+
+            modalAction.show();
+        }
+
+        // Función para manejar clic en día del calendario
+        function handleDateClick(info) {
+            // Prellenar el modal con la fecha seleccionada
+            document.getElementById('modalDateInput').value = info.dateStr;
+
+            // Abrir el modal de nueva cita
+            new bootstrap.Modal(document.getElementById('modalNewAppointmentTech')).show();
+        }
+
+        // Función para enviar nueva cita al backend
+        function submitNewAppointment(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+
+            // Preparar datos para enviar
+            const data = {
+                tech_id: '{{ current_user.id }}',
+                client_name: formData.get('client_name'),
+                date: formData.get('date'),
+                start_time: formData.get('start_time'),
+                end_time: formData.get('end_time'),
+                service_type_id: formData.get('service_type_id'),
+                description: formData.get('description') || ''
+            };
+
+            // Desactivar botón submit para evitar doble click
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Agendando...';
+            }
+
+            fetch('/create_appointment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(result => {
+                    // Re-habilitar botón
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
+                    }
+
+                    if (result.success) {
+                        // ✅ Limpiar formulario ANTES de cerrar modal
+                        form.reset();
+                        
+                        // Limpiar campos explícitamente
+                        document.getElementById('modalFieldClient').value = '';
+                        document.getElementById('modalDateInput').value = '';
+                        document.getElementById('modalStartTime').value = '';
+                        document.getElementById('modalEndTime').value = '';
+                        
+                        // Cerrar modal
+                        const modalEl = document.getElementById('modalNewAppointmentTech');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) {
+                            modal.hide();
+                        }
+
+                        // ✅ Actualizar calendario (eventsSet se ejecuta automáticamente)
+                        if (calendar) {
+                            calendar.refetchEvents();
+                        }
+
+                        // Mostrar confirmación no bloqueante
+                        showToast('✓ Cita agendada correctamente', 'success');
+                    } else {
+                        alert('Error al agendar cita: ' + (result.msg || 'Error desconocido'));
+                    }
+                })
+                .catch(error => {
+                    // Re-habilitar botón en caso de error
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
+                    }
+                    console.error('Error:', error);
+                    alert('Error al conectar con el servidor');
+                });
+        }
+
+        function renderTaskList() {
+            const container = document.getElementById('taskListContainer');
+            if (!container) return;
+
+            // Leer radio de 3 estados (todas / pendientes / completadas)
+            const selectedFilter = (document.querySelector('input[name="techTaskStatusFilter"]:checked') || {}).value || 'todas';
+            const activeTypes = getTechActiveFilters();
+
+            // Usar allTasksCache (todos los eventos) en lugar de cachedTasks (solo rango visible)
+            const source = allTasksCache.length > 0 ? allTasksCache : cachedTasks;
+
+            let filtered = source.filter(t => {
+                const status = (t.extendedProps.status || '').toLowerCase();
+                let statusOk;
+                if      (selectedFilter === 'completadas') statusOk = status === 'completado';
+                else if (selectedFilter === 'pendientes')  statusOk = status !== 'completado';
+                else                                       statusOk = true; // 'todas'
+                const typeOk = activeTypes.length === 0 || activeTypes.includes(t.extendedProps.service_type);
+                return statusOk && typeOk;
+            });
+
+            // Ordenar por fecha
+            filtered.sort((a, b) => {
+                if (currentSort === 'alpha') return a.title.localeCompare(b.title);
+                return new Date(a.start) - new Date(b.start);
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-3">No hay tareas</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            filtered.forEach(t => {
+                const isDone   = (t.extendedProps.status || '').toLowerCase() === 'completado';
+                const isRemote = t.extendedProps.is_remote || false;
+                const dateStr  = t.start ? t.start.split('T')[0] : '—';
+                const timeStr  = t.start && t.start.includes('T') ? t.start.split('T')[1].substring(0, 5) : '';
+                const typeColor = t.color || '#6c757d';
+                const itemColor = isRemote ? '#06b6d4' : typeColor;
+
+                const div = document.createElement('div');
+                div.className = `task-item status-${t.extendedProps.status}`;
+                div.style.borderLeftColor = itemColor;
+                div.style.borderLeftWidth = '4px';
+                if (isDone) div.style.opacity = '0.65';
+                if (isRemote) div.style.background = 'rgba(6,182,212,0.08)';
+
+                const remoteBadge = isRemote
+                    ? `<span class="badge bg-info text-dark ms-1" style="font-size:0.6rem;">📡 REMOTO</span>`
+                    : '';
+
+                div.innerHTML = `
+                    <div class="fw-bold text-white" style="cursor:pointer;" onclick="focusCalendarEvent('${t.id}')">${t.extendedProps.client || 'Sin cliente'}${remoteBadge}</div>
+                    <div class="small text-secondary">
+                        <i class="bi bi-calendar-event me-1"></i>${dateStr}${timeStr ? ' | ' + timeStr : ''}
+                        <br>
+                        <span class="badge ${isDone ? 'bg-success' : 'bg-warning text-dark'}">${t.extendedProps.status}</span>
+                        <span class="badge" style="background:${itemColor}; color:#fff; font-size:0.65rem;">${t.extendedProps.service_type || 'Sin tipo'}</span>
+                    </div>
+                    <div class="d-flex gap-1 mt-1">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="event.stopPropagation(); openEditFromList('${t.id}')" title="Editar"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); deleteFromList('${t.id}')" title="Eliminar"><i class="bi bi-trash"></i></button>
+                    </div>
+                `;
+
+                div.onclick = () => focusCalendarEvent(t.id);
+                container.appendChild(div);
+            });
+        }
+
+        // ✅ FUNCIÓN: Toggle mostrar/ocultar lista de tareas
+        function toggleTaskList() {
+            _taskListVisible = !_taskListVisible;
+            const taskListCol = document.getElementById('taskListCol');
+            const calendarCol = document.getElementById('calendarCol');
+            const btn         = document.getElementById('toggleTaskListBtn');
+
+            if (_taskListVisible) {
+                taskListCol.classList.remove('d-none');
+                calendarCol.className = 'col-lg-9';
+                btn.innerHTML = '<i class="bi bi-layout-sidebar-reverse me-1"></i> Ocultar lista de tareas';
+                loadAllTasksForList();
+            } else {
+                taskListCol.classList.add('d-none');
+                calendarCol.className = 'col-12';
+                btn.innerHTML = '<i class="bi bi-layout-sidebar-reverse me-1"></i> Mostrar lista de tareas';
+            }
+            // Re-renderizar el calendario para que ocupe el espacio correcto
+            setTimeout(() => { if (calendar) calendar.updateSize(); }, 50);
+        }
+        
+        // ✅ FUNCIÓN: Toggle estado de tarea completada/pendiente
+        function toggleTaskComplete(taskId) {
+            fetch(`/api/task_action/${taskId}/toggle`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        if (calendar) calendar.refetchEvents();
+                        const msg = data.status === 'Completado' ? '✓ Tarea completada' : '↻ Tarea pendiente';
+                        showToast(msg, 'success');
+                    } else {
+                        alert('Error: ' + (data.msg || 'No se pudo actualizar la tarea'));
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    alert('Error al actualizar la tarea');
+                });
+        }
+
+        function sortTasks(sortType) {
+            currentSort = sortType;
+            renderTaskList();
+        }
+
+        function deleteFromList(id) {
+            if (!confirm('¿Eliminar esta tarea?')) return;
+
+            fetch(`/api/task_action/${id}/delete`, { method: 'POST' })
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        if (calendar) calendar.refetchEvents();
+                        showToast('✓ Tarea eliminada', 'success');
+                    } else {
+                        alert('❌ Error: ' + (data.msg || 'No se pudo eliminar la tarea'));
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    alert('❌ Error de conexión. Por favor, intenta de nuevo.');
+                });
+        }
+
+        // Función auxiliar para editar desde la lista
+        function openEditFromList(id) {
+            // Buscar el evento en el calendario
+            const task = cachedTasks.find(t => t.id == id);
+            if (!task) {
+                alert('No se encontró la tarea');
+                return;
+            }
+            
+            // Setear el ID y abrir el modal de edición
+            document.getElementById('evtId').value = id;
+            
+            // Cargar los datos y abrir el modal de edición
+            fetch(`/api/get_task/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('editTechClientInput').value = data.data.client_name;
+                        document.getElementById('editTechDate').value = data.data.date;
+                        document.getElementById('editTechTime').value = data.data.time;
+                        document.getElementById('editTechService').value = data.data.service_type;
+                        document.getElementById('editTechNotes').value = data.data.notes || '';
+                        document.getElementById('formEditApptTech').action = `/edit_appointment/${id}`;
+                        new bootstrap.Modal(document.getElementById('modalEditAppointmentTech')).show();
+                        setupAutocomplete('editTechClientInput', 'editTechClientList');
+                    } else {
+                        alert('Error al cargar los datos de la tarea');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    alert('Error al cargar la tarea');
+                });
+        }
+
+        function focusCalendarEvent(id) {
+            // Buscar el evento en caché para saber si es remoto
+            const task = allTasksCache.find(t => t.id == id) || cachedTasks.find(t => t.id == id);
+
+            // Si es asistencia remota, abrir directamente el modal remoto
+            if (task && task.extendedProps && task.extendedProps.is_remote) {
+                openTechRemoteModal(id, task.title, task.extendedProps);
+                return;
+            }
+
+            if (!calendar) {
+                // Si el calendario no está inicializado, ir a la sección y esperar
+                showSection('section-agenda');
+                setTimeout(() => focusCalendarEvent(id), 400);
+                return;
+            }
+            if (task) {
+                // Navegar al día en el calendario
+                calendar.gotoDate(task.start);
+
+                // Simular clic en el evento para abrir el modal
+                const evt = calendar.getEventById(id);
+                if (evt) {
+                    handleEventClick({ event: evt });
+                }
+            }
+        }
+
+        function performTaskAction(action) {
+            const id = document.getElementById('evtId').value;
+
+            // ✅ Completar: redirigir al parte con la cita pre-rellena
+            if (action === 'complete') {
+                modalAction.hide();
+                openParteFromTask(id);
+                return;
+            }
+
+            // Para otras acciones (delete), continuar normalmente
+            const actionNames = {
+                'delete': 'eliminar',
+                'cancel': 'cancelar'
+            };
+            const actionName = actionNames[action] || action;
+
+            if (!confirm(`¿Confirmar ${actionName} esta tarea?`)) return;
+
+            fetch(`/api/task_action/${id}/${action}`, { method: 'POST' })
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        calendar.refetchEvents();
+                        modalAction.hide();
+                        const successMsg = action === 'delete' ? 'Tarea eliminada' : 'Acción completada';
+                        showToast('✓ ' + successMsg, 'success');
+                    } else {
+                        alert('❌ Error: ' + (data.msg || 'No se pudo completar la acción'));
+                    }
+                })
+                .catch(err => {
+                    console.error('Error en performTaskAction:', err);
+                    alert('❌ Error de conexión. Por favor, intenta de nuevo.');
+                });
+        }
+
+        // ✅ NUEVA FUNCIÓN: Abrir sección parte con datos de la cita pre-rellenos
+        function openParteFromTask(taskId) {
+            fetch(`/api/get_task_full/${taskId}`)
+                .then(res => res.json())
+                .then(response => {
+                    if (!response.success) {
+                        alert('Error al cargar datos de la cita');
+                        return;
+                    }
+                    const task = response.data;
+
+                    // Ir a la sección parte (loadDraft se llama dentro con delay)
+                    _partePreloaded = true;
+                    showSection('section-parte');
+
+                    // Intentar seleccionar en el dropdown de citas vinculadas
+                    const sel = document.getElementById('linkedTaskSelect');
+                    let foundInDropdown = false;
+                    if (sel) {
+                        for (let opt of sel.options) {
+                            if (opt.value == taskId) {
+                                sel.value = taskId;
+                                foundInDropdown = true;
+                                break;
+                            }
+                        }
+                        if (foundInDropdown) {
+                            // Trigger normal: rellena campos + muestra cabecera + info cliente
+                            fillFromTask(sel);
+                        } else {
+                            // La cita no está en el dropdown (fuera de rango) → rellenar directamente
+                            // Añadir opción temporal para que el backend reciba el linked_task_id correcto
+                            const tmpOpt = document.createElement('option');
+                            tmpOpt.value = taskId;
+                            tmpOpt.textContent = `${task.date || ''} - ${task.client_name || '(sin cliente)'}`;
+                            tmpOpt.selected = true;
+                            sel.appendChild(tmpOpt);
+                            sel.value = taskId;
+                            _fillParteFieldsFromTaskData(task);
+                        }
+                    }
+
+                    // Guardar en draft para persistencia
+                    setTimeout(() => saveDraft(false), 400);
+                    showToast('✓ Cita cargada en el parte', 'info');
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    alert('Error al cargar la cita');
+                });
+        }
+
+        // Rellena los campos del parte directamente desde los datos de la tarea
+        function _fillParteFieldsFromTaskData(task) {
+            // Cabecera de cita vinculada
+            const hdr = document.getElementById('linked-cita-header');
+            if (hdr) {
+                hdr.classList.remove('d-none');
+                const fmtDate = task.date ? task.date.split('-').reverse().join('/') : '—';
+                const lchClient  = document.getElementById('lch-client');
+                const lchService = document.getElementById('lch-service');
+                const lchDate    = document.getElementById('lch-date');
+                if (lchClient)  lchClient.textContent  = task.client_name  || '—';
+                if (lchService) lchService.textContent = task.service_type || '—';
+                if (lchDate)    lchDate.textContent    = fmtDate;
+            }
+            // Campos del formulario
+            const fc    = document.getElementById('fieldClient');
+            const fd    = document.getElementById('fieldDate');
+            const fs    = document.getElementById('fieldService');
+            const fdesc = document.getElementById('fieldDescription');
+            if (fc)    fc.value    = task.client_name  || '';
+            if (fd)    fd.value    = task.date         || '';
+            if (fdesc) fdesc.value = task.description  || '';
+            if (fs && task.service_type) {
+                for (let opt of fs.options) {
+                    if (opt.value === task.service_type) { fs.value = task.service_type; break; }
+                }
+            }
+            // Información del cliente
+            if (task.client_info) showClientInfo(task.client_info);
+        }
+
+        // --- SINCRONIZACIÓN DE DATOS AL SELECCIONAR TAREA ---
+        // fillFromTask definida más abajo con lógica completa incluyendo showClientInfo
+
+        // --- AUTOCOMPLETE LOGIC ---
+        function setupAutocomplete(inputId, listId) {
+            const input = document.getElementById(inputId);
+            const list = document.getElementById(listId);
+
+            if (!input || !list) return;
+
+            input.addEventListener('input', function () {
+                const val = this.value;
+                if (!val || val.length < 2) {
+                    list.innerHTML = '';
+                    list.style.display = 'none';
+                    return;
+                }
+
+                fetch(`/api/clients_search?q=${encodeURIComponent(val)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        list.innerHTML = '';
+                        if (data.length > 0) {
+                            list.style.display = 'block';
+                            data.forEach(item => {
+                                const div = document.createElement('div');
+                                div.className = 'suggestion-item';
+                                div.innerText = item.name;
+                                // mousedown antes de blur para que no se cierre la lista
+                                div.addEventListener('mousedown', function (e) {
+                                    e.preventDefault();
+                                    input.value = item.name;
+                                    list.innerHTML = '';
+                                    list.style.display = 'none';
+                                });
+                                list.appendChild(div);
+                            });
+                        } else {
+                            list.style.display = 'none';
+                        }
+                    });
+            });
+
+            input.addEventListener('blur', function () {
+                setTimeout(() => { list.style.display = 'none'; }, 150);
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!input.contains(e.target) && !list.contains(e.target)) {
+                    list.style.display = 'none';
+                }
+            });
+        }
+
+        // Activar autocompletado en los campos
+        setupAutocomplete('fieldClient', 'listClient');
+        setupAutocomplete('modalFieldClient', 'modalListClient');
+
+        // Función para editar cita (Tech)
+        function openEditTechModal() {
+            const taskId = document.getElementById('evtId').value;
+            fetch(`/api/get_task/${taskId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('editTechClientInput').value = data.data.client_name;
+                        document.getElementById('editTechDate').value = data.data.date;
+                        document.getElementById('editTechTime').value = data.data.time;
+                        document.getElementById('editTechService').value = data.data.service_type;
+                        document.getElementById('editTechNotes').value = data.data.notes;
+                        document.getElementById('formEditApptTech').action = `/edit_appointment/${taskId}`;
+                        modalAction.hide();
+                        new bootstrap.Modal(document.getElementById('modalEditAppointmentTech')).show();
+                        setupAutocomplete('editTechClientInput', 'editTechClientList');
+                    }
+                });
+        }
+
+        // --- MANEJO DE ARCHIVOS (formulario principal de parte) ---
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileListContainer = document.getElementById('fileList');
+
+        // Manejo de archivos del MODAL de completar tarea
+        const modalFileUploadArea = document.getElementById('modalFileUploadArea');
+        if (modalFileUploadArea) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
+                modalFileUploadArea.addEventListener(ev, preventDefaults, false);
+            });
+            ['dragenter', 'dragover'].forEach(ev => {
+                modalFileUploadArea.addEventListener(ev, () => modalFileUploadArea.classList.add('drag-over'), false);
+            });
+            ['dragleave', 'drop'].forEach(ev => {
+                modalFileUploadArea.addEventListener(ev, () => modalFileUploadArea.classList.remove('drag-over'), false);
+            });
+            modalFileUploadArea.addEventListener('drop', (e) => {
+                handleFiles(e.dataTransfer.files);
+            }, false);
+        }
+
+        function handleModalFileSelect(event) {
+            handleFiles(event.target.files);
+        }
+
+        // Prevenir comportamiento por defecto de drag and drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            fileUploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Resaltar área de drop cuando se arrastra un archivo
+        ['dragenter', 'dragover'].forEach(eventName => {
+            fileUploadArea.addEventListener(eventName, () => {
+                fileUploadArea.classList.add('drag-over');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            fileUploadArea.addEventListener(eventName, () => {
+                fileUploadArea.classList.remove('drag-over');
+            }, false);
+        });
+
+        // Manejar drop de archivos
+        fileUploadArea.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }, false);
+
+        // Manejar selección de archivos
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            handleFiles(files);
+        }
+
+        function handleFiles(files) {
+            [...files].forEach(file => {
+                // Validar tamaño (16MB máximo)
+                if (file.size > 16 * 1024 * 1024) {
+                    alert(`El archivo ${file.name} es muy grande. Máximo 16MB.`);
+                    return;
+                }
+
+                // Validar extensión
+                const extension = file.name.split('.').pop().toLowerCase();
+                const allowed = ['png', 'jpg', 'jpeg', 'gif', 'pdf', 'doc', 'docx', 'txt'];
+                if (!allowed.includes(extension)) {
+                    alert(`Tipo de archivo no permitido: ${file.name}`);
+                    return;
+                }
+
+                selectedFiles.push(file);
+            });
+
+            renderFileList();
+        }
+
+        function renderFileList() {
+            // Actualizar ambos contenedores si existen
+            const containers = [
+                document.getElementById('fileList'),
+                document.getElementById('modalFileList')
+            ].filter(Boolean);
+
+            containers.forEach(container => {
+                container.innerHTML = '';
+                selectedFiles.forEach((file, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                    <div>
+                        <i class="bi bi-file-earmark me-2"></i>
+                        <span>${file.name}</span>
+                        <small class="text-muted ms-2">(${(file.size / 1024).toFixed(1)} KB)</small>
+                    </div>
+                    <span class="remove-file" onclick="removeFile(${index})">
+                        <i class="bi bi-x-circle-fill"></i>
+                    </span>
+                `;
+                    container.appendChild(fileItem);
+                });
+            });
+
+            // Actualizar el input del form de parte si existe
+            if (fileInput) {
+                const dt = new DataTransfer();
+                selectedFiles.forEach(file => dt.items.add(file));
+                fileInput.files = dt.files;
+            }
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            renderFileList();
+        }
+
+        // ============================================================
+        // FUNCIONES DE ANALÍTICAS
+        // ============================================================
+
+        let pieChart, lineChart, barChart;
+        let analyticsData = null;
+
+        // Cargar analíticas cuando se abre la sección
+        function loadAnalytics() {
+            const period = document.getElementById('periodSelector').value;
+
+            // Mostrar indicador de carga
+            document.getElementById('totalServices').textContent = '...';
+            var _tm_l = document.getElementById('totalMaintenances'); if(_tm_l) _tm_l.textContent = '...';
+            document.getElementById('avgTime').textContent = '...';
+            var _thw_l = document.getElementById('totalHoursWorked'); if(_thw_l) _thw_l.textContent = '...';
+
+            fetch(`/api/tech_analytics?period=${period}`)
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`HTTP error! status: ${res.status}`);
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    analyticsData = data;
+                    updateAnalyticsSummary(data);
+                    updateServiceDistributionChart(data);
+                })
+                .catch(err => {
+                    console.error('Error cargando analíticas:', err);
+                    document.getElementById('totalServices').textContent = '0';
+                    var _tm_e = document.getElementById('totalMaintenances'); if(_tm_e) _tm_e.textContent = '0';
+                    var _thw_e = document.getElementById('totalHoursWorked'); if(_thw_e) _thw_e.textContent = '0h';
+                    document.getElementById('avgTime').textContent = '0h';
+                    // Mostrar mensaje en la UI en lugar de alert
+                    const container = document.querySelector('#section-analytics .row');
+                    if (container) {
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'col-12 alert alert-warning mt-3';
+                        errorDiv.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>No se pudieron cargar las analíticas. Asegúrate de tener partes completados.';
+                        container.insertBefore(errorDiv, container.firstChild);
+                        setTimeout(() => errorDiv.remove(), 5000);
+                    }
+                });
+        }
+
+        function updateAnalyticsSummary(data) {
+            document.getElementById('totalServices').textContent = data.total_services || 0;
+            var _thw = document.getElementById('totalHoursWorked');
+            if (_thw) _thw.textContent = data.total_hours || '0h';
+            var _tm = document.getElementById('totalMaintenances');
+            if (_tm) _tm.textContent = data.total_maintenances || 0;
+            document.getElementById('avgTime').textContent = (data.avg_time || 0) + 'h';
+        }
+
+        function updateServiceDistributionChart(data) {
+            const ctx = document.getElementById('serviceDistributionChart');
+
+            if (pieChart) {
+                pieChart.destroy();
+            }
+
+            const distribution = data.service_distribution || {};
+            const labels = Object.keys(distribution);
+            const values = Object.values(distribution);
+
+            const colors = [
+                '#f37021', '#4bc0c0', '#ff6384', '#36a2eb', '#ffcd56',
+                '#9966ff', '#ff9f40', '#4dc9f6', '#f67019', '#8549ba'
+            ];
+
+            pieChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderColor: '#161616',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#ffffff',
+                                padding: 15,
+                                font: { size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Cargar analíticas cuando se muestra la sección
+        // ==================== FIRMA DIGITAL ====================
+
+        // Firma para el FORMULARIO PRINCIPAL (section-parte)
+        let mainSignaturePad = {
+            canvas: null,
+            ctx: null,
+            isDrawing: false,
+            lastX: 0,
+            lastY: 0,
+
+            init: function () {
+                this.canvas = document.getElementById('signaturePadMain');
+                if (!this.canvas) return;
+
+                this.ctx = this.canvas.getContext('2d');
+
+                // Ajustar tamaño del canvas
+                const container = this.canvas.parentElement;
+                this.canvas.width = container.clientWidth - 20;
+                this.canvas.height = 200;
+
+                // Configurar estilo de dibujo
+                this.ctx.strokeStyle = '#000';
+                this.ctx.lineWidth = 2;
+                this.ctx.lineCap = 'round';
+                this.ctx.lineJoin = 'round';
+
+                // Limpiar canvas con fondo blanco
+                this.ctx.fillStyle = '#fff';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Eventos de mouse
+                this.canvas.addEventListener('mousedown', (e) => this.startDrawing(e));
+                this.canvas.addEventListener('mousemove', (e) => this.draw(e));
+                this.canvas.addEventListener('mouseup', () => { this.stopDrawing(); setTimeout(() => saveDraft(false), 300); });
+                this.canvas.addEventListener('mouseout', () => this.stopDrawing());
+
+                // Eventos táctiles
+                this.canvas.addEventListener('touchstart', (e) => this.handleTouch(e));
+                this.canvas.addEventListener('touchmove', (e) => this.handleTouch(e));
+                this.canvas.addEventListener('touchend', () => { this.stopDrawing(); setTimeout(() => saveDraft(false), 300); });
+            },
+
+            startDrawing: function (e) {
+                this.isDrawing = true;
+                const rect = this.canvas.getBoundingClientRect();
+                this.lastX = e.clientX - rect.left;
+                this.lastY = e.clientY - rect.top;
+            },
+
+            draw: function (e) {
+                if (!this.isDrawing) return;
+
+                const rect = this.canvas.getBoundingClientRect();
+                const currentX = e.clientX - rect.left;
+                const currentY = e.clientY - rect.top;
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.lastX, this.lastY);
+                this.ctx.lineTo(currentX, currentY);
+                this.ctx.stroke();
+
+                this.lastX = currentX;
+                this.lastY = currentY;
+            },
+
+            stopDrawing: function () {
+                this.isDrawing = false;
+            },
+
+            handleTouch: function (e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                if (!touch) return;
+
+                const mouseEvent = new MouseEvent(
+                    e.type === 'touchstart' ? 'mousedown' :
+                        e.type === 'touchmove' ? 'mousemove' : 'mouseup',
+                    {
+                        clientX: touch.clientX,
+                        clientY: touch.clientY,
+                        bubbles: true
+                    }
+                );
+                this.canvas.dispatchEvent(mouseEvent);
+            },
+
+            clear: function () {
+                if (!this.canvas || !this.ctx) return;
+                this.ctx.fillStyle = '#fff';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                document.getElementById('mainSignaturePreview').style.display = 'none';
+            },
+
+            toDataURL: function () {
+                if (!this.canvas) return null;
+                return this.canvas.toDataURL('image/png');
+            },
+
+            isEmpty: function () {
+                if (!this.canvas) return true;
+
+                const pixelData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height).data;
+
+                // Verificar si hay algún píxel no blanco
+                for (let i = 0; i < pixelData.length; i += 4) {
+                    // Si encuentra un píxel que no sea blanco puro o transparente
+                    if (pixelData[i] !== 255 || pixelData[i + 1] !== 255 || pixelData[i + 2] !== 255) {
+                        return false;
+                    }
+                }
+                return true;
+            },
+
+            preview: function () {
+                if (this.isEmpty()) {
+                    alert('La firma está vacía. Por favor, firme en el recuadro.');
+                    return;
+                }
+
+                const dataURL = this.toDataURL();
+                const preview = document.getElementById('mainSignaturePreview');
+                const previewImg = document.getElementById('mainSignaturePreviewImg');
+
+                previewImg.src = dataURL;
+                preview.style.display = 'block';
+            }
+        };
+
+        // Funciones globales para los botones
+        function clearMainSignature() {
+            mainSignaturePad.clear();
+        }
+
+        function testMainSignature() {
+            mainSignaturePad.preview();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const reportForm = document.querySelector('form[action="/save_report"]');
+            if (reportForm) {
+                reportForm.addEventListener('submit', function (e) {
+                    // Sincronizar campos hidden de compatibilidad
+                    const ws = document.getElementById('parte_work_start');
+                    const we = document.getElementById('parte_work_end');
+                    if (ws && ws.value) document.getElementById('fieldEntryTime').value = ws.value;
+                    if (we && we.value) document.getElementById('fieldExitTime').value = we.value;
+
+                    // work_duration = diferencia fin − inicio trabajo
+                    try {
+                        const eVal = ws ? ws.value : null;
+                        const xVal = we ? we.value : null;
+                        if (eVal && xVal) {
+                            const [eh, em] = eVal.split(':').map(Number);
+                            const [xh, xm] = xVal.split(':').map(Number);
+                            let totalMin = (xh * 60 + xm) - (eh * 60 + em);
+                            if (totalMin < 0) totalMin += 24 * 60;
+                            const dh = Math.floor(totalMin / 60);
+                            const dm = totalMin % 60;
+                            const durInput = document.getElementById('workDurationInput');
+                            if (durInput) durInput.value = `${String(dh).padStart(2,'0')}:${String(dm).padStart(2,'0')}:00`;
+                        }
+                    } catch(_e) {}
+
+                    // Validar nombre del firmante
+                    const signatureName = document.getElementById('signatureName').value.trim();
+                    if (!signatureName) {
+                        e.preventDefault();
+                        alert('⚠️ Por favor, ingresa el nombre completo del cliente que firma');
+                        document.getElementById('signatureName').focus();
+                        return false;
+                    }
+
+                    // Validar firma digital
+                    if (mainSignaturePad.isEmpty()) {
+                        e.preventDefault();
+                        alert('⚠️ La firma del cliente es OBLIGATORIA\n\nPor favor, solicita al cliente que firme en el recuadro blanco.');
+                        return false;
+                    }
+
+                    // Capturar firma en base64
+                    document.getElementById('signatureDataInput').value = mainSignaturePad.toDataURL();
+
+                    // ✅ Eliminar borrador al enviar el parte
+                    fetch('/api/parte/draft', { method: 'DELETE' }).catch(() => {});
+
+                    return true;
+                });
+            }
+
+            // Limpiar formulario al cerrar modal de nueva cita
+            const modalNewAppt = document.getElementById('modalNewAppointmentTech');
+            if (modalNewAppt) {
+                modalNewAppt.addEventListener('hidden.bs.modal', function () {
+                    const form = this.querySelector('form');
+                    if (form) {
+                        form.reset();
+                        const clientInput = document.getElementById('modalFieldClient');
+                        const dateInput = document.getElementById('modalDateInput');
+                        const startTimeInput = document.getElementById('modalStartTime');
+                        const endTimeInput = document.getElementById('modalEndTime');
+                        if (clientInput) clientInput.value = '';
+                        if (dateInput) dateInput.value = '';
+                        if (startTimeInput) startTimeInput.value = '';
+                        if (endTimeInput) endTimeInput.value = '';
+                    }
+                });
+            }
+
+            // ✅ Comprobar borrador al cargar la página
+            checkDraftNotice();
+        });
+
+        // Firma para el MODAL de completar tarea (mantener código original)
+
+        let signaturePad = null;
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        function initSignaturePad() {
+            const canvas = document.getElementById('signaturePad');
+            if (!canvas) return;
+
+            // Clonar el canvas para eliminar todos los event listeners previos
+            const newCanvas = canvas.cloneNode(true);
+            canvas.parentNode.replaceChild(newCanvas, canvas);
+
+            const ctx = newCanvas.getContext('2d');
+
+            // Ajustar tamaño del canvas
+            const container = newCanvas.parentElement;
+            newCanvas.width = container.clientWidth - 20;
+            newCanvas.height = 200;
+
+            // Configurar estilo de dibujo
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            // Limpiar canvas
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, newCanvas.width, newCanvas.height);
+
+            // Eventos de mouse
+            newCanvas.addEventListener('mousedown', startDrawing);
+            newCanvas.addEventListener('mousemove', draw);
+            newCanvas.addEventListener('mouseup', stopDrawing);
+            newCanvas.addEventListener('mouseout', stopDrawing);
+
+            // Eventos táctiles
+            newCanvas.addEventListener('touchstart', handleTouch);
+            newCanvas.addEventListener('touchmove', handleTouch);
+            newCanvas.addEventListener('touchend', stopDrawing);
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const rect = e.target.getBoundingClientRect();
+            lastX = e.clientX - rect.left;
+            lastY = e.clientY - rect.top;
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+
+            const canvas = document.getElementById('signaturePad');
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+
+            const currentX = e.clientX - rect.left;
+            const currentY = e.clientY - rect.top;
+
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(currentX, currentY);
+            ctx.stroke();
+
+            lastX = currentX;
+            lastY = currentY;
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function handleTouch(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            if (!touch) return;
+
+            const mouseEvent = new MouseEvent(
+                e.type === 'touchstart' ? 'mousedown' :
+                    e.type === 'touchmove' ? 'mousemove' : 'mouseup',
+                {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    bubbles: true
+                }
+            );
+            e.target.dispatchEvent(mouseEvent);
+        }
+
+        function clearSignature() {
+            const canvas = document.getElementById('signaturePad');
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            document.getElementById('signaturePreview').style.display = 'none';
+        }
+
+        function previewSignature() {
+            const canvas = document.getElementById('signaturePad');
+            const dataURL = canvas.toDataURL('image/png');
+
+            const preview = document.getElementById('signaturePreview');
+            const previewImg = document.getElementById('signaturePreviewImg');
+
+            previewImg.src = dataURL;
+            preview.style.display = 'block';
+        }
+
+        function isSignatureEmpty() {
+            const canvas = document.getElementById('signaturePad');
+            if (!canvas) return true;
+            const ctx = canvas.getContext('2d');
+            const pixelData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+            // Un canvas con fondo blanco tiene R=255, G=255, B=255, A=255
+            // Si algún pixel tiene un color distinto al blanco puro, hay firma
+            for (let i = 0; i < pixelData.length; i += 4) {
+                if (pixelData[i] !== 255 || pixelData[i + 1] !== 255 || pixelData[i + 2] !== 255) {
+                    return false; // hay trazos
+                }
+            }
+            return true; // todo blanco = vacío
+        }
+
+        function getSignatureData() {
+            if (isSignatureEmpty()) {
+                return null;
+            }
+
+            const canvas = document.getElementById('signaturePad');
+            return canvas.toDataURL('image/png');
+        }
+
+        // ==================== COMPLETAR TAREA ====================
+
+        function openCompleteTaskModal(taskId) {
+            // Obtener detalles de la tarea
+            fetch(`/api/task/${taskId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const task = data.data;
+
+                        document.getElementById('completeTaskId').value = taskId;
+                        document.getElementById('completeClientName').textContent = task.client_name;
+                        document.getElementById('completeServiceType').textContent = task.service_type;
+                        document.getElementById('completeDescription').value = task.description || '';
+
+                        // Limpiar firma y archivos
+                        clearSignature();
+                        document.getElementById('signatureClientName').value = task.client_name;
+                        selectedFiles = [];
+                        renderFileList();
+
+                        // Mostrar modal
+                        const modal = new bootstrap.Modal(document.getElementById('modalCompleteTask'));
+                        modal.show();
+
+                        // Inicializar firma después de que el modal esté visible
+                        setTimeout(initSignaturePad, 300);
+                    } else {
+                        alert('Error al cargar datos de la tarea');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    alert('Error al cargar la tarea');
+                });
+        }
+
+        function saveTaskCompletion() {
+            const taskId = document.getElementById('completeTaskId').value;
+            const description = document.getElementById('completeDescription').value.trim();
+            const parts = document.getElementById('completeParts').value.trim();
+
+            // VALIDACIONES
+            if (!description) {
+                alert('Por favor, describe el trabajo realizado');
+                document.getElementById('completeDescription').focus();
+                return;
+            }
+
+            const signatureClientName = document.getElementById('signatureClientName').value.trim();
+            const signatureData = getSignatureData();
+
+            if (!signatureClientName) {
+                alert('Por favor, ingresa el nombre completo del cliente que firma');
+                document.getElementById('signatureClientName').focus();
+                return;
+            }
+
+            if (!signatureData) {
+                alert('⚠️ La firma del cliente es OBLIGATORIA\n\nPor favor, solicita al cliente que firme en el recuadro para confirmar la asistencia.');
+                return;
+            }
+
+            // Recopilar datos de stock
+            const stockItemId = document.getElementById('completeStockItem').value;
+            const stockQuantity = document.getElementById('completeStockQuantity').value;
+            const stockAction = document.getElementById('completeStockAction').value;
+
+            // Preparar datos
+            const data = {
+                description: description,
+                parts: parts,
+                signature: signatureData,
+                signature_client_name: signatureClientName,
+                stock_item_id: stockItemId || null,
+                stock_quantity: stockQuantity || 0,
+                stock_action: stockAction,
+                attachments: [] // Los archivos se suben por separado
+            };
+
+            // Subir archivos primero si hay
+            if (selectedFiles.length > 0) {
+                uploadTaskFiles(taskId)
+                    .then(() => completeTaskFinal(taskId, data))
+                    .catch(err => {
+                        console.error('Error subiendo archivos:', err);
+                        alert('Error al subir archivos adjuntos');
+                    });
+            } else {
+                completeTaskFinal(taskId, data);
+            }
+        }
+
+        function uploadTaskFiles(taskId) {
+            const promises = selectedFiles.map(file => {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                return fetch(`/upload_task_file/${taskId}`, {
+                    method: 'POST',
+                    body: formData
+                }).then(res => res.json());
+            });
+
+            return Promise.all(promises);
+        }
+
+        function completeTaskFinal(taskId, data) {
+            fetch(`/complete_task/${taskId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(res => res.json())
+                .then(result => {
+                    if (result.success) {
+                        showToast('✅ Parte completado y firmado correctamente', 'success', 1500);
+                        setTimeout(() => location.reload(), 1600);
+                    } else {
+                        alert('Error: ' + result.msg);
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    alert('Error al completar el parte');
+                });
+        }
+
+        // Mostrar/ocultar detalles de stock
+        document.getElementById('completeStockItem')?.addEventListener('change', function () {
+            const div = document.getElementById('stockDetailsDiv');
+            div.style.display = this.value ? 'block' : 'none';
+        });
+
+
+        // ==================== INFORMACIÓN DEL CLIENTE ====================
+
+        function fillFromTask(selectElement) {
+            const selected = selectElement.options[selectElement.selectedIndex];
+
+            if (selected.value === 'none') {
+                // Ocultar cabecera de cita vinculada
+                document.getElementById('linked-cita-header').classList.add('d-none');
+                document.getElementById('fieldClient').value = '';
+                document.getElementById('fieldService').selectedIndex = 0;
+                document.getElementById('fieldDescription').value = '';
+                hideClientInfo();
+                saveDraft(false);
+                return;
+            }
+
+            const taskId = selected.value;
+
+            fetch(`/api/get_task_full/${taskId}`)
+                .then(res => res.json())
+                .then(response => {
+                    if (response.success) {
+                        const task = response.data;
+
+                        // ✅ Mostrar cabecera no-editable
+                        const hdr = document.getElementById('linked-cita-header');
+                        hdr.classList.remove('d-none');
+                        document.getElementById('lch-client').textContent  = task.client_name || '—';
+                        document.getElementById('lch-service').textContent = task.service_type || '—';
+                        const fmtDate = task.date
+                            ? task.date.split('-').reverse().join('/')
+                            : '—';
+                        document.getElementById('lch-date').textContent = fmtDate;
+
+                        // Rellenar campos editables
+                        document.getElementById('fieldClient').value = task.client_name;
+                        document.getElementById('fieldDate').value   = task.date;
+
+                        // Seleccionar tipo de servicio
+                        const serviceSelect = document.getElementById('fieldService');
+                        for (let opt of serviceSelect.options) {
+                            if (opt.value === task.service_type) {
+                                serviceSelect.value = task.service_type;
+                                break;
+                            }
+                        }
+
+                        document.getElementById('fieldDescription').value = task.description || '';
+
+                        // Mostrar información del cliente
+                        if (task.client_info) {
+                            showClientInfo(task.client_info);
+                        }
+
+                        // Auto-guardar borrador con cita vinculada
+                        saveDraft(false);
+                    }
+                })
+                .catch(err => console.error('Error:', err));
+        }
+
+        function showClientInfo(clientInfo) {
+            let infoDiv = document.getElementById('clientInfoDisplay');
+
+            if (!infoDiv) {
+                infoDiv = document.createElement('div');
+                infoDiv.id = 'clientInfoDisplay';
+                infoDiv.className = 'alert mb-3 mt-2';
+                infoDiv.style.backgroundColor = '#1a1a1a';
+                infoDiv.style.border = '2px solid var(--osla-orange)';
+                infoDiv.style.color = 'white';
+                document.querySelector('#fieldClient').parentElement.appendChild(infoDiv);
+            }
+
+            let html = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold mb-3 text-warning">
+                            <i class="bi bi-person-circle me-2"></i>
+                            Información del Cliente
+                        </h6>
+                        <div class="small">
+                            <div class="mb-2">
+                                <i class="bi bi-telephone text-warning me-2"></i>
+                                <a href="tel:${clientInfo.phone}" class="text-info fw-bold text-decoration-none">${clientInfo.phone}</a>
+                            </div>
+                            <div class="mb-2">
+                                <i class="bi bi-envelope text-warning me-2"></i>
+                                <span class="text-white fw-bold">${clientInfo.email}</span>
+                            </div>
+                            <div class="mb-2">
+                                <i class="bi bi-geo-alt text-warning me-2"></i>
+                                <span class="text-white">${clientInfo.address || '<em class="text-muted">Sin dirección</em>'}</span>
+                                <div class="mt-1">
+                                    ${(clientInfo.address || '').trim()
+                                        ? `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((clientInfo.address).trim())}" target="_blank" rel="noopener" class="btn btn-sm btn-warning fw-bold"><i class="bi bi-geo-alt-fill me-1"></i>Abrir en Google Maps</a>`
+                                        : `<button class="btn btn-sm btn-secondary" disabled title="No hay dirección registrada"><i class="bi bi-geo-alt me-1"></i>Sin dirección registrada</button>`
+                                    }
+                                </div>
+                            </div>
+                            ${clientInfo.link ? `
+                                <div class="mt-2">
+                                    <a href="${clientInfo.link}" target="_blank" class="btn btn-sm btn-outline-info fw-bold">
+                                        <i class="bi bi-globe me-1"></i>Sitio Web / Portal
+                                    </a>
+                                </div>
+                            ` : ''}
+                            ${clientInfo.has_support ? `
+                                <div class="alert alert-success py-2 px-2 mt-2 mb-0 fw-bold" style="background-color: #28a745 !important; color: white !important; border: 2px solid #20c997;">
+                                    <small>
+                                        <i class="bi bi-shield-check me-1"></i>
+                                        <strong>Soporte Activo:</strong>
+                                        ${clientInfo.support_monday_friday ? 'L-V ' : ''}
+                                        ${clientInfo.support_saturday ? 'Sáb ' : ''}
+                                        ${clientInfo.support_sunday ? 'Dom' : ''}
+                                    </small>
+                                </div>
+                            ` : ''}
+                            ${clientInfo.notes ? `
+                                <div class="mt-2 pt-2 border-top border-secondary">
+                                    <i class="bi bi-sticky text-warning me-1"></i>
+                                    <span class="text-white-50">${clientInfo.notes}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" onclick="hideClientInfo()"></button>
+                </div>
+            `;
+
+            infoDiv.innerHTML = html;
+            infoDiv.style.display = 'block';
+        }
+
+        function hideClientInfo() {
+            const infoDiv = document.getElementById('clientInfoDisplay');
+            if (infoDiv) {
+                infoDiv.style.display = 'none';
+            }
+        }
+
+
+        // ⚠️ CORRECCIÓN: Listener duplicado eliminado.
+        // El formulario ya tiene onsubmit="submitNewAppointment(event)" en el HTML (línea 743).
+        // Este listener duplicado causaba que se enviaran DOS requests simultáneos,
+        // haciendo que el segundo fallara con "ya existe la cita".
+
+        // Función para copiar dirección al portapapeles
+        function copyAddress(address) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(address)
+                    .then(() => {
+                        alert('✓ Dirección copiada al portapapeles');
+                    })
+                    .catch(err => {
+                        console.error('Error al copiar:', err);
+                        alert('No se pudo copiar la dirección');
+                    });
+            } else {
+                // Fallback para navegadores antiguos
+                const textarea = document.createElement('textarea');
+                textarea.value = address;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    alert('✓ Dirección copiada al portapapeles');
+                } catch (err) {
+                    console.error('Error al copiar:', err);
+                    alert('No se pudo copiar la dirección');
+                }
+                document.body.removeChild(textarea);
+            }
+        }
+
+        // ==================== BUSCADOR DE PIEZAS (STOCK SEARCH) ====================
+
+        function initStockSearch(wrapper) {
+            if (!wrapper) return;
+            const input      = wrapper.querySelector('.stock-search-input');
+            const hiddenId   = wrapper.querySelector('.stock-id-input');
+            const suggestions= wrapper.querySelector('.stock-suggestions-list');
+            const selName    = wrapper.querySelector('.stock-selected-name');
+            if (!input || !hiddenId || !suggestions) return;
+
+            // Evitar doble-listener si ya fue inicializado
+            if (wrapper.dataset.searchInit) return;
+            wrapper.dataset.searchInit = '1';
+
+            input.addEventListener('input', function () {
+                const q = this.value.trim();
+                hiddenId.value = '';
+                if (selName) { selName.textContent = ''; }
+                if (q.length < 1) {
+                    suggestions.innerHTML = '';
+                    suggestions.style.display = 'none';
+                    return;
+                }
+                fetch(`/api/stock_search?q=${encodeURIComponent(q)}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        suggestions.innerHTML = '';
+                        if (data.length > 0) {
+                            suggestions.style.display = 'block';
+                            data.forEach(item => {
+                                const div = document.createElement('div');
+                                div.className = 'suggestion-item';
+                                const cat = item.category ? `<span class="badge bg-secondary ms-1" style="font-size:0.65rem;">${item.category}</span>` : '';
+                                const qty = item.quantity > 0
+                                    ? `<small class="text-success ms-1">(${item.quantity} disp.)</small>`
+                                    : `<small class="text-danger ms-1">(sin stock)</small>`;
+                                div.innerHTML = `<strong>${item.name}</strong>${qty}${cat}`;
+                                div.addEventListener('click', () => {
+                                    input.value = item.name;
+                                    hiddenId.value = item.id;
+                                    if (selName) {
+                                        selName.textContent = `✓ ${item.name} — ${item.quantity} disponibles`;
+                                    }
+                                    suggestions.innerHTML = '';
+                                    suggestions.style.display = 'none';
+                                    saveDraft(false);
+                                });
+                                suggestions.appendChild(div);
+                            });
+                        } else {
+                            suggestions.innerHTML = '<div class="suggestion-item text-muted">Sin resultados</div>';
+                            suggestions.style.display = 'block';
+                            setTimeout(() => { suggestions.style.display = 'none'; }, 1500);
+                        }
+                    })
+                    .catch(() => { suggestions.style.display = 'none'; });
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!wrapper.contains(e.target)) {
+                    suggestions.style.display = 'none';
+                }
+            });
+        }
+
+        // Inicializar buscadores de stock existentes al cargar
+        document.querySelectorAll('.stock-search-wrapper').forEach(w => initStockSearch(w));
+
+        // Función para añadir más items de stock
+        function addStockItem() {
+            const container = document.getElementById('stockItemsContainer');
+            const firstRow = container.querySelector('.stock-item-row');
+            const newRow = firstRow.cloneNode(true);
+
+            // Resetear campos del buscador
+            const si = newRow.querySelector('.stock-search-input');
+            const hi = newRow.querySelector('.stock-id-input');
+            const sn = newRow.querySelector('.stock-selected-name');
+            const sg = newRow.querySelector('.stock-suggestions-list');
+            if (si) si.value = '';
+            if (hi) hi.value = '';
+            if (sn) sn.textContent = '';
+            if (sg) { sg.innerHTML = ''; sg.style.display = 'none'; }
+
+            // Resetear cantidad y acción
+            newRow.querySelector('input[type="number"]').value = 0;
+            const actionSel = newRow.querySelector('select[name="stock_action[]"]');
+            if (actionSel) actionSel.selectedIndex = 0;
+
+            // Eliminar flag de init para que se reinicialice
+            const wrapper = newRow.querySelector('.stock-search-wrapper');
+            if (wrapper) delete wrapper.dataset.searchInit;
+
+            // Cambiar botón + a -
+            const button = newRow.querySelector('button');
+            button.className = 'btn btn-danger btn-sm w-100';
+            button.innerHTML = '<i class="bi bi-dash-lg"></i>';
+            button.setAttribute('onclick', 'removeStockItem(this)');
+
+            container.appendChild(newRow);
+
+            // Inicializar el nuevo buscador
+            if (wrapper) initStockSearch(wrapper);
+        }
+
+        // Función para eliminar item de stock
+        function removeStockItem(button) {
+            const row = button.closest('.stock-item-row');
+            row.remove();
+        }
+
+
+        // ==================== TIMESTAMPS DEL PARTE (v2) ====================
+
+        function pad2(n) { return String(n).padStart(2, '0'); }
+
+        /**
+         * Registra la hora actual en el campo hidden + display visual.
+         */
+        function stampTime(fieldId, displayId) {
+            const now = new Date();
+            const hhmm = pad2(now.getHours()) + ':' + pad2(now.getMinutes());
+            const input = document.getElementById(fieldId);
+            const display = document.getElementById(displayId);
+            if (input)   input.value = hhmm;
+            if (display) {
+                display.textContent = hhmm;
+                display.style.color = '#fff';
+                display.style.transition = 'transform 0.1s';
+                display.style.transform  = 'scale(1.12)';
+                setTimeout(() => { display.style.transform = 'scale(1)'; }, 150);
+            }
+            saveDraft(false);
+        }
+
+        // ==================== BORRADOR DEL PARTE ====================
+
+        function getDraftData() {
+            // Capturar firma si existe y no está vacía
+            var sigData = '';
+            try {
+                if (mainSignaturePad && !mainSignaturePad.isEmpty()) {
+                    sigData = mainSignaturePad.toDataURL();
+                }
+            } catch(e) {}
+
+            return {
+                linked_task_id:        (document.getElementById('linkedTaskSelect')      || {}).value || 'none',
+                client_name:           (document.getElementById('fieldClient')            || {}).value || '',
+                service_type:          (document.getElementById('fieldService')           || {}).value || '',
+                date:                  (document.getElementById('fieldDate')              || {}).value || '',
+                description:           (document.getElementById('fieldDescription')       || {}).value || '',
+                parts_text:            (document.querySelector('input[name="parts_text"]') || {}).value || '',
+                signature_name:        (document.getElementById('signatureName')          || {}).value || '',
+                signature_data:        sigData,
+                parte_transport_start: (document.getElementById('parte_transport_start')  || {}).value || '',
+                parte_arrival:         (document.getElementById('parte_arrival')          || {}).value || '',
+                parte_work_start:      (document.getElementById('parte_work_start')       || {}).value || '',
+                parte_work_end:        (document.getElementById('parte_work_end')         || {}).value || '',
+                ts1: (document.getElementById('ts-display-1') || {}).textContent || '--:--',
+                ts2: (document.getElementById('ts-display-2') || {}).textContent || '--:--',
+                ts3: (document.getElementById('ts-display-3') || {}).textContent || '--:--',
+                ts4: (document.getElementById('ts-display-4') || {}).textContent || '--:--',
+            };
+        }
+
+        function saveDraft(showFeedback) {
+            const data = getDraftData();
+            const hasData = data.client_name || data.linked_task_id !== 'none' ||
+                            data.parte_transport_start || data.parte_arrival ||
+                            data.parte_work_start || data.parte_work_end || data.description ||
+                            data.parts_text;
+            if (!hasData) return;
+
+            fetch('/api/parte/draft', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (showFeedback && res.success) {
+                    const st = document.getElementById('draft-save-status');
+                    if (st) {
+                        const t = new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
+                        st.textContent = '✓ Guardado ' + t;
+                        setTimeout(() => { st.textContent = ''; }, 3000);
+                    }
+                    showToast('Borrador guardado', 'info', 1200);
+                }
+            })
+            .catch(() => {});
+        }
+
+        function loadDraft() {
+            fetch('/api/parte/draft')
+                .then(r => r.json())
+                .then(res => {
+                    if (!res.success || !res.draft) return;
+                    const d = res.draft;
+
+                    // Restaurar selector de cita
+                    const sel = document.getElementById('linkedTaskSelect');
+                    if (sel && d.linked_task_id && d.linked_task_id !== 'none') {
+                        for (let opt of sel.options) {
+                            if (opt.value == d.linked_task_id) {
+                                sel.value = d.linked_task_id;
+                                fillFromTask(sel);
+                                break;
+                            }
+                        }
+                    }
+
+                    if (d.client_name && document.getElementById('fieldClient'))
+                        document.getElementById('fieldClient').value = d.client_name;
+                    if (d.service_type && document.getElementById('fieldService'))
+                        document.getElementById('fieldService').value = d.service_type;
+                    if (d.date && document.getElementById('fieldDate'))
+                        document.getElementById('fieldDate').value = d.date;
+                    if (d.description && document.getElementById('fieldDescription'))
+                        document.getElementById('fieldDescription').value = d.description;
+                    if (d.parts_text) {
+                        const ptEl = document.querySelector('input[name="parts_text"]');
+                        if (ptEl) ptEl.value = d.parts_text;
+                    }
+                    if (d.signature_name && document.getElementById('signatureName'))
+                        document.getElementById('signatureName').value = d.signature_name;
+
+                    const tsMap = [
+                        ['parte_transport_start','ts-display-1', d.parte_transport_start, d.ts1],
+                        ['parte_arrival',        'ts-display-2', d.parte_arrival,         d.ts2],
+                        ['parte_work_start',     'ts-display-3', d.parte_work_start,      d.ts3],
+                        ['parte_work_end',       'ts-display-4', d.parte_work_end,        d.ts4],
+                    ];
+                    tsMap.forEach(([fid, did, val, disp]) => {
+                        const inp = document.getElementById(fid);
+                        const dsp = document.getElementById(did);
+                        if (inp && val)  inp.value = val;
+                        if (dsp && disp && disp !== '--:--') {
+                            dsp.textContent = disp;
+                            dsp.style.color = '#fff';
+                        }
+                    });
+
+                    // Restaurar firma guardada en borrador
+                    if (d.signature_data && d.signature_data.startsWith('data:image')) {
+                        try {
+                            const restoreSig = function() {
+                                if (!mainSignaturePad || !mainSignaturePad.canvas) {
+                                    setTimeout(restoreSig, 150);
+                                    return;
+                                }
+                                const img = new Image();
+                                img.onload = function() {
+                                    mainSignaturePad.ctx.drawImage(img, 0, 0);
+                                    // Mostrar preview
+                                    const preview = document.getElementById('mainSignaturePreview');
+                                    const previewImg = document.getElementById('mainSignaturePreviewImg');
+                                    if (preview) preview.style.display = 'block';
+                                    if (previewImg) previewImg.src = d.signature_data;
+                                };
+                                img.src = d.signature_data;
+                            };
+                            setTimeout(restoreSig, 350);
+                        } catch(e) {}
+                    }
+                })
+                .catch(() => {});
+        }
+
+        function checkDraftNotice() {
+            fetch('/api/parte/draft')
+                .then(r => r.json())
+                .then(res => {
+                    const notice = document.getElementById('draft-notice');
+                    if (!notice) return;
+                    if (res.success && res.draft) {
+                        const d = res.draft;
+                        const hasData = d.client_name || (d.linked_task_id && d.linked_task_id !== 'none') ||
+                                        d.parte_transport_start || d.parte_arrival ||
+                                        d.parte_work_start || d.parte_work_end || d.description || d.parts_text;
+                        notice.classList.toggle('d-none', !hasData);
+                    } else {
+                        notice.classList.add('d-none');
+                    }
+                })
+                .catch(() => {
+                    const notice = document.getElementById('draft-notice');
+                    if (notice) notice.classList.add('d-none');
+                });
+        }
+
+        // Auto-guardar al cambiar campos clave del parte
+        document.addEventListener('DOMContentLoaded', function () {
+            ['fieldClient','fieldService','fieldDate','fieldDescription'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('change', () => saveDraft(false));
+            });
+            // También auto-guardar parts_text y nombre firmante
+            const ptEl = document.querySelector('input[name="parts_text"]');
+            if (ptEl) ptEl.addEventListener('input', () => saveDraft(false));
+            const snEl = document.getElementById('signatureName');
+            if (snEl) snEl.addEventListener('input', () => saveDraft(false));
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // ASISTENCIA REMOTA — Modal para Técnico
+        // ═══════════════════════════════════════════════════════════════
+
+        function openTechRemoteModal(taskId, title, props) {
+            // Rellenar campos básicos
+            document.getElementById('techRmtTaskId').value = taskId;
+            document.getElementById('techRmtClientId').value = props.client_id || '';
+            document.getElementById('techRmtClientTitle').textContent = props.client || 'Asistencia Remota';
+
+            // Estado
+            const badge = document.getElementById('techRmtStatusBadge');
+            const st = (props.status || '').toLowerCase();
+            badge.textContent = props.status || 'Pendiente';
+            badge.className = 'badge ' + (
+                st === 'completado'   ? 'bg-success' :
+                st === 'sin asignar' ? 'bg-secondary' :
+                'bg-warning text-dark'
+            );
+            badge.style.cssText = 'font-size:0.9rem; padding:6px 12px;';
+
+            // Reset campos
+            document.getElementById('techRmtStartTime').value = '';
+            document.getElementById('techRmtEndTime').value   = '';
+            document.getElementById('techRmtDescription').value = '';
+            document.getElementById('techRmtDuration').textContent = '—';
+            document.getElementById('techRmtDateLabel').textContent = '';
+            document.getElementById('techRmtWarning').style.display = 'none';
+            document.getElementById('techRmtHoursSection').style.display = 'none';
+            document.getElementById('techRmtClientCard').style.display = 'none';
+
+            // Cargar datos actuales de la tarea desde el servidor
+            fetch(`/api/task/${taskId}`)
+                .then(r => r.json())
+                .then(resp => {
+                    const data = resp.data || resp;
+                    if (data.start_time) document.getElementById('techRmtStartTime').value = data.start_time.substring(0, 5);
+                    if (data.end_time)   document.getElementById('techRmtEndTime').value   = data.end_time.substring(0, 5);
+                    if (data.description) document.getElementById('techRmtDescription').value = data.description;
+                    if (data.date) document.getElementById('techRmtDateLabel').textContent = data.date;
+                    updateTechRmtDuration();
+
+                    // Mostrar ficha cliente con soporte
+                    const ci = data.client_info;
+                    if (ci) {
+                        document.getElementById('techRmtClientCardName').textContent  = ci.name || '—';
+                        document.getElementById('techRmtClientCardPhone').textContent = ci.phone || '—';
+                        document.getElementById('techRmtClientCardEmail').textContent = ci.email || '—';
+                        const badgeOk = document.getElementById('techRmtSupportBadge');
+                        const badgeNo = document.getElementById('techRmtNoSupportBadge');
+                        if (ci.has_support) {
+                            badgeOk.style.display = 'inline-block';
+                            badgeNo.style.display = 'none';
+                        } else {
+                            badgeOk.style.display = 'none';
+                            badgeNo.style.display = 'inline-block';
+                        }
+                        document.getElementById('techRmtClientCard').style.display = 'block';
+                    }
+                })
+                .catch(() => {});
+
+            // Cargar horas mensuales del cliente
+            const clientId = props.client_id;
+            if (clientId) {
+                fetch(`/api/client/${clientId}/monthly_remote_hours`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!data.success) return;
+                        document.getElementById('techRmtHoursSection').style.display = 'block';
+                        const pct = Math.min(100, (data.used_hours / data.limit_hours) * 100);
+                        const bar = document.getElementById('techRmtHoursBar');
+                        bar.style.width      = pct + '%';
+                        bar.style.background = pct >= 100 ? '#ef4444' : pct >= 80 ? '#f59e0b' : '#06b6d4';
+                        document.getElementById('techRmtHoursLabel').textContent  = `${data.used_hours}h / ${data.limit_hours}h`;
+                        document.getElementById('techRmtHoursDetail').textContent =
+                            `${data.session_count} sesión(es) · Restantes: ${data.remaining_hours}h · Mes: ${data.month}`;
+                    })
+                    .catch(() => {});
+            }
+
+            new bootstrap.Modal(document.getElementById('modalTechRemoteAssistance')).show();
+        }
+
+        function updateTechRmtDuration() {
+            const t0 = document.getElementById('techRmtStartTime').value;
+            const t1 = document.getElementById('techRmtEndTime').value;
+            const el = document.getElementById('techRmtDuration');
+            if (!t0 || !t1) { el.textContent = '—'; return; }
+            const diff = (new Date('1970-01-01T' + t1) - new Date('1970-01-01T' + t0)) / 3600000;
+            if (diff <= 0) { el.textContent = '—'; return; }
+            const h = Math.floor(diff);
+            const m = Math.round((diff - h) * 60);
+            el.textContent = h ? `${h}h${m ? m+'m' : ''}` : `${m}m`;
+        }
+
+        function techRmtSave(markComplete) {
+            const taskId      = document.getElementById('techRmtTaskId').value;
+            const startTime   = document.getElementById('techRmtStartTime').value;
+            const endTime     = document.getElementById('techRmtEndTime').value;
+            const description = document.getElementById('techRmtDescription').value.trim();
+
+            if (markComplete && !startTime) {
+                showToast('Introduce la hora de inicio antes de completar', 'error');
+                return;
+            }
+
+            fetch(`/api/remote_task/${taskId}/update`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    start_time: startTime,
+                    end_time: endTime,
+                    description,
+                    mark_complete: markComplete
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.warning) {
+                        document.getElementById('techRmtWarningText').textContent = data.warning;
+                        document.getElementById('techRmtWarning').style.display = 'block';
+                    }
+                    showToast(markComplete ? '✅ Asistencia completada' : '✅ Guardado', 'success');
+                    // Actualizar badge de estado
+                    if (data.status) {
+                        const badge = document.getElementById('techRmtStatusBadge');
+                        const st = data.status.toLowerCase();
+                        badge.textContent = data.status;
+                        badge.className = 'badge ' + (st === 'completado' ? 'bg-success' : 'bg-warning text-dark');
+                    }
+                    if (markComplete) {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('modalTechRemoteAssistance'));
+                        if (modal) modal.hide();
+                    }
+                    if (calendar) calendar.refetchEvents();
+                } else {
+                    showToast('❌ ' + (data.msg || 'Error al guardar'), 'error');
+                }
+            })
+            .catch(() => showToast('❌ Error de conexión', 'error'));
+        }
+
+        function techRmtDelete() {
+            const taskId = document.getElementById('techRmtTaskId').value;
+            if (!confirm('¿Eliminar esta asistencia remota?')) return;
+
+            fetch(`/api/task/${taskId}/delete`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalTechRemoteAssistance'));
+                    if (modal) modal.hide();
+                    showToast('🗑️ Asistencia eliminada', 'success');
+                    if (calendar) calendar.refetchEvents();
+                } else {
+                    showToast('❌ No se pudo eliminar', 'error');
+                }
+            })
+            .catch(() => showToast('❌ Error de conexión', 'error'));
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // NUEVA ASISTENCIA REMOTA — Creada desde el calendario del técnico
+        // ═══════════════════════════════════════════════════════════════
+
+        (function initTechNewRemoteModal() {
+            document.addEventListener('DOMContentLoaded', function () {
+                var modal = document.getElementById('modalNewRemoteTech');
+                if (!modal) return;
+
+                // Al abrir: pre-rellenar fecha de hoy
+                modal.addEventListener('show.bs.modal', function () {
+                    var dateEl = document.getElementById('techNewRmtDate');
+                    if (dateEl && !dateEl.value) {
+                        dateEl.value = new Date().toISOString().split('T')[0];
+                    }
+                });
+                modal.addEventListener('shown.bs.modal', function () {
+                    var inp = document.getElementById('techNewRmtClientSearch');
+                    if (inp) inp.focus();
+                    _initTechNewRmtSearch();
+                });
+
+                // Al cerrar: limpiar todo
+                modal.addEventListener('hidden.bs.modal', function () {
+                    ['techNewRmtClientSearch','techNewRmtDescription','techNewRmtStartTime',
+                     'techNewRmtEndTime','techNewRmtSelectedClientId','techNewRmtSelectedClientName']
+                        .forEach(function (id) {
+                            var el = document.getElementById(id);
+                            if (el) el.value = '';
+                        });
+                    var dateEl = document.getElementById('techNewRmtDate');
+                    if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
+                    var card = document.getElementById('techNewRmtClientCard');
+                    if (card) card.style.display = 'none';
+                    var hrs = document.getElementById('techNewRmtHoursSection');
+                    if (hrs) hrs.style.display = 'none';
+                    _closeTechNewRmtList();
+                    var btn = document.getElementById('techNewRmtSubmitBtn');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="bi bi-plus-lg me-1"></i>Crear Asistencia Remota';
+                    }
+                });
+            });
+        }());
+
+        var _techNewRmtSearchReady = false;
+
+        function _initTechNewRmtSearch() {
+            if (_techNewRmtSearchReady) return;
+            _techNewRmtSearchReady = true;
+
+            var input = document.getElementById('techNewRmtClientSearch');
+            var list  = document.getElementById('techNewRmtClientsList');
+            if (!input || !list) return;
+
+            list.style.zIndex = '9999';
+
+            input.addEventListener('input', function () {
+                var q = this.value.trim();
+                if (q.length < 2) { _closeTechNewRmtList(); return; }
+                fetch('/api/clients_search?q=' + encodeURIComponent(q))
+                    .then(function (res) { return res.json(); })
+                    .then(function (items) {
+                        list.innerHTML = '';
+                        if (!Array.isArray(items) || items.length === 0) { _closeTechNewRmtList(); return; }
+                        items.forEach(function (item) {
+                            var div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            div.textContent = item.name + (item.has_support ? ' ✓' : '');
+                            div.addEventListener('mousedown', function (e) {
+                                e.preventDefault();
+                                _selectTechNewRmtClient(item);
+                            });
+                            list.appendChild(div);
+                        });
+                        list.style.display = 'block';
+                    })
+                    .catch(function () { _closeTechNewRmtList(); });
+            });
+
+            input.addEventListener('blur', function () { setTimeout(_closeTechNewRmtList, 150); });
+            input.addEventListener('keydown', function (e) { if (e.key === 'Escape') _closeTechNewRmtList(); });
+            document.addEventListener('mousedown', function (e) {
+                if (!input.contains(e.target) && !list.contains(e.target)) _closeTechNewRmtList();
+            });
+        }
+
+        function _closeTechNewRmtList() {
+            var list = document.getElementById('techNewRmtClientsList');
+            if (list) { list.innerHTML = ''; list.style.display = 'none'; }
+        }
+
+        function _selectTechNewRmtClient(item) {
+            document.getElementById('techNewRmtSelectedClientId').value   = item.id;
+            document.getElementById('techNewRmtSelectedClientName').value = item.name;
+            document.getElementById('techNewRmtClientSearch').value       = item.name;
+            _closeTechNewRmtList();
+
+            document.getElementById('techNewRmtClientName').textContent  = item.name;
+            document.getElementById('techNewRmtClientPhone').textContent = item.phone || '—';
+            document.getElementById('techNewRmtClientEmail').textContent = item.email || '—';
+
+            var badgeOk = document.getElementById('techNewRmtSupportBadge');
+            var badgeNo = document.getElementById('techNewRmtNoSupportBadge');
+            if (item.has_support) {
+                badgeOk.style.display = 'inline-block';
+                badgeNo.style.display = 'none';
+            } else {
+                badgeOk.style.display = 'none';
+                badgeNo.style.display = 'inline-block';
+            }
+            document.getElementById('techNewRmtClientCard').style.display = 'block';
+
+            // Cargar horas mensuales del cliente
+            fetch('/api/client/' + item.id + '/monthly_remote_hours')
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (!data.success) return;
+                    var section = document.getElementById('techNewRmtHoursSection');
+                    section.style.display = 'block';
+                    var pct = Math.min(100, (data.used_hours / data.limit_hours) * 100);
+                    var bar = document.getElementById('techNewRmtHoursBar');
+                    bar.style.width      = pct + '%';
+                    bar.style.background = pct >= 100 ? '#ef4444' : pct >= 80 ? '#f59e0b' : '#06b6d4';
+                    document.getElementById('techNewRmtHoursLabel').textContent = data.used_hours + 'h / ' + data.limit_hours + 'h';
+                    var warn = document.getElementById('techNewRmtHoursWarning');
+                    warn.style.display = data.over_limit ? 'block' : 'none';
+                })
+                .catch(function () {});
+        }
+
+        function techSubmitNewRemote() {
+            var clientId   = document.getElementById('techNewRmtSelectedClientId').value;
+            var clientName = document.getElementById('techNewRmtSelectedClientName').value;
+            if (!clientId || !clientName) {
+                showToast('⚠️ Por favor selecciona un cliente', 'error');
+                return;
+            }
+
+            var description = document.getElementById('techNewRmtDescription').value.trim();
+            var dateVal     = (document.getElementById('techNewRmtDate')      || {}).value || null;
+            var startTime   = (document.getElementById('techNewRmtStartTime') || {}).value || null;
+            var endTime     = (document.getElementById('techNewRmtEndTime')   || {}).value || null;
+
+            var btn = document.getElementById('techNewRmtSubmitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Creando...';
+
+            fetch('/api/remote_assistance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    client_id: clientId,
+                    client_name: clientName,
+                    description: description,
+                    date: dateVal,
+                    start_time: startTime || null,
+                    end_time: endTime || null,
+                    tech_id: null   // el backend asigna al usuario autenticado cuando es null
+                })
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-plus-lg me-1"></i>Crear Asistencia Remota';
+                if (data.success) {
+                    showToast('✅ Asistencia remota creada', 'success');
+                    var m = bootstrap.Modal.getInstance(document.getElementById('modalNewRemoteTech'));
+                    if (m) m.hide();
+                    if (calendar) calendar.refetchEvents();
+                } else {
+                    showToast('❌ ' + (data.msg || 'Error al crear'), 'error');
+                }
+            })
+            .catch(function () {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-plus-lg me-1"></i>Crear Asistencia Remota';
+                showToast('❌ Error de conexión', 'error');
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // TAREAS SIN ASIGNAR — Visibles y completables por técnicos
+        // ═══════════════════════════════════════════════════════════════
+
+        function loadTechUnassignedTasks() {
+            fetch('/api/tech/unassigned_tasks')
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById('techUnassignedTasksList');
+                    const badge     = document.getElementById('unassignedCountBadge');
+                    if (!container) return;
+
+                    if (!data.success || data.data.length === 0) {
+                        container.innerHTML = '<div class="text-muted text-center py-3"><i class="bi bi-check-circle me-2"></i>No hay tareas pendientes por asignar</div>';
+                        badge.style.display = 'none';
+                        return;
+                    }
+
+                    badge.textContent = data.data.length;
+                    badge.style.display = 'inline-block';
+
+                    let html = '';
+                    data.data.forEach(task => {
+                        const color = task.service_type_color || '#6c757d';
+                        html += `
+                            <div class="card bg-dark border-danger mb-2">
+                                <div class="card-body p-2">
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <strong class="text-danger">${task.client_name || '(sin cliente)'}</strong>
+                                        <div class="d-flex gap-1 align-items-center flex-wrap">
+                                            <small class="badge" style="background:${color};">${task.service_type_name}</small>
+                                            <small class="text-muted"><i class="bi bi-calendar-event me-1"></i>${task.date}</small>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted d-block mb-2">${task.description || '(sin descripción)'}</small>
+                                    <button class="btn btn-sm btn-success fw-bold" onclick="techTakeUnassignedTask(${task.id})">
+                                        <i class="bi bi-clipboard-check me-1"></i> Completar
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = html;
+                })
+                .catch(err => {
+                    console.error('Error cargando tareas sin asignar:', err);
+                    const container = document.getElementById('techUnassignedTasksList');
+                    if (container) container.innerHTML = '<div class="text-danger text-center py-2"><i class="bi bi-exclamation-triangle me-1"></i>Error al cargar tareas</div>';
+                });
+        }
+
+        function techTakeUnassignedTask(taskId) {
+            // Abre la sección de parte pre-rellenada con los datos de la tarea
+            openParteFromTask(taskId);
+        }
+
+    </script>
+
+</body>
+
+</html>

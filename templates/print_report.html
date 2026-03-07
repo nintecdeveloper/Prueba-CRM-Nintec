@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parte de Trabajo #{{ task.id }} | OSLAPRINT</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+        
+        :root {
+            --osla-orange: #f37021;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .print-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            border-bottom: 4px solid var(--osla-orange);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .brand-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #000;
+        }
+        
+        .brand-title span {
+            color: var(--osla-orange);
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .report-id {
+            background: var(--osla-orange);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        
+        .section-title {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-left: 4px solid var(--osla-orange);
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+        
+        .info-row {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #555;
+            min-width: 150px;
+            display: inline-block;
+        }
+        
+        .info-value {
+            color: #000;
+        }
+        
+        .signature-box {
+            border: 2px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            background: #fff;
+            margin-top: 10px;
+        }
+        
+        .signature-img {
+            max-width: 400px;
+            height: auto;
+            border: 1px solid #ddd;
+            background: white;
+        }
+        
+        .footer-info {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+            font-size: 0.85rem;
+            color: #666;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="print-container">
+        <!-- Botón de imprimir -->
+        <div class="text-end mb-3 no-print">
+            <button onclick="window.print()" class="btn btn-primary">
+                <i class="bi bi-printer-fill"></i> Imprimir Parte
+            </button>
+            <button onclick="window.close()" class="btn btn-secondary">
+                Cerrar
+            </button>
+        </div>
+        
+        <!-- Cabecera -->
+        <div class="header">
+            <div class="row align-items-center">
+                <div class="col-8">
+                    <div class="brand-title">OSLA<span>PRINT</span></div>
+                    <div class="subtitle">Parte de Trabajo Técnico</div>
+                </div>
+                <div class="col-4 text-end">
+                    <div class="report-id">
+                        PARTE #{{ task.id }}
+                    </div>
+                    <div class="mt-2 small">
+                        <strong>Fecha:</strong> {{ task.date.strftime('%d/%m/%Y') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Información del Cliente -->
+        <div class="section-title">Datos del Cliente</div>
+        <div class="info-row">
+            <span class="info-label">Cliente:</span>
+            <span class="info-value">{{ task.client_name }}</span>
+        </div>
+        {% if task.client %}
+        <div class="info-row">
+            <span class="info-label">Teléfono:</span>
+            <span class="info-value">{{ task.client.phone }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Email:</span>
+            <span class="info-value">{{ task.client.email }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Dirección:</span>
+            <span class="info-value">{{ task.client.address }}</span>
+        </div>
+        {% if task.client.link %}
+        <div class="info-row">
+            <span class="info-label">Enlace:</span>
+            <span class="info-value"><a href="{{ task.client.link }}" target="_blank">{{ task.client.link }}</a></span>
+        </div>
+        {% endif %}
+        {% if task.client.has_support %}
+        <div class="info-row">
+            <span class="info-label">Soporte Activo:</span>
+            <span class="info-value">
+                <span class="badge bg-success">SÍ</span>
+                {% if task.client.support_schedule == 'lv' %}
+                <span class="badge bg-info">L-V</span>
+                {% elif task.client.support_schedule == 'ls' %}
+                <span class="badge bg-info">L-S</span>
+                {% elif task.client.support_schedule == 'ld' %}
+                <span class="badge bg-info">L-D</span>
+                {% endif %}
+            </span>
+        </div>
+        {% endif %}
+        {% endif %}
+        
+        <!-- Información del Servicio -->
+        <div class="section-title">Detalles del Servicio</div>
+        <div class="info-row">
+            <span class="info-label">Tipo de Servicio:</span>
+            <span class="info-value">{{ task.service_type.name if task.service_type else 'No especificado' }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Técnico:</span>
+            <span class="info-value">{{ task.tech.username if task.tech else 'No asignado' }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Hora de Entrada:</span>
+            <span class="info-value">{{ task.start_time if task.start_time else 'No registrada' }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Hora de Salida:</span>
+            <span class="info-value">{{ task.end_time if task.end_time else 'No registrada' }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Estado:</span>
+            <span class="info-value">
+                <span class="badge bg-{{ 'success' if task.status == 'Completado' else 'warning' }}">
+                    {{ task.status }}
+                </span>
+            </span>
+        </div>
+        
+        <!-- Trabajo Realizado -->
+        <div class="section-title">Trabajo Realizado</div>
+        <div class="p-3 border rounded bg-light">
+            {{ task.description if task.description else 'Sin descripción' }}
+        </div>
+        
+        <!-- Piezas / Stock -->
+        {% if task.parts_text or task.stock_item %}
+        <div class="section-title">Piezas y Stock</div>
+        {% if task.stock_item %}
+        <div class="info-row">
+            <span class="info-label">Artículo de Stock:</span>
+            <span class="info-value">{{ task.stock_item.name }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Cantidad:</span>
+            <span class="info-value">{{ task.stock_quantity_used }} unidades</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Acción:</span>
+            <span class="info-value">{{ task.stock_action if task.stock_action else 'No especificado' }}</span>
+        </div>
+        {% endif %}
+        {% if task.parts_text %}
+        <div class="info-row">
+            <span class="info-label">Observaciones:</span>
+            <span class="info-value">{{ task.parts_text }}</span>
+        </div>
+        {% endif %}
+        {% endif %}
+        
+        <!-- Archivos Adjuntos -->
+        {% if attachments and attachments|length > 0 %}
+        <div class="section-title">Archivos Adjuntos</div>
+        <ul class="list-unstyled">
+            {% for attachment in attachments %}
+            <li class="mb-2">
+                <i class="bi bi-paperclip"></i>
+                <a href="{{ url_for('uploaded_file', filename=attachment.filename) }}" target="_blank">
+                    {{ attachment.original_name }}
+                </a>
+                <small class="text-muted">({{ (attachment.size / 1024) | round(1) }} KB)</small>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        
+        <!-- Firma del Cliente -->
+        {% if task.signature_data %}
+        <div class="section-title">Firma del Cliente</div>
+        <div class="signature-box">
+            <div class="mb-2">
+                <strong>Nombre:</strong> {{ task.signature_client_name }}
+            </div>
+            <div class="mb-3">
+                <strong>Fecha de firma:</strong> {{ task.signature_timestamp.strftime('%d/%m/%Y %H:%M') if task.signature_timestamp else 'No registrada' }}
+            </div>
+            <div>
+                <strong>Firma:</strong>
+            </div>
+            <div class="mt-2">
+                <img src="{{ task.signature_data }}" alt="Firma del cliente" class="signature-img">
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Pie de página -->
+        <div class="footer-info">
+            <p class="mb-1">
+                <strong>OSLAPRINT</strong> - Gestión Técnica Profesional
+            </p>
+            <p class="mb-0 small">
+                Documento generado automáticamente el {{ now().strftime('%d/%m/%Y a las %H:%M') }}
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-print cuando se carga la página (opcional)
+        // window.onload = function() { window.print(); }
+    </script>
+</body>
+</html>

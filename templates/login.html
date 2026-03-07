@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSLAPRINT | Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Iconos Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --osla-orange: #f37021;
+            --osla-dark: #0a0a0a;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--osla-dark) 0%, #1a1a1a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            width: 100%;
+            padding: 20px;
+        }
+        
+        .login-card {
+            background: #161616;
+            border: 2px solid #333;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #fff;
+            margin: 0;
+        }
+        
+        .logo span {
+            color: var(--osla-orange);
+        }
+        
+        .form-control {
+            background: #000;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 12px;
+            font-size: 1rem;
+        }
+        
+        .form-control:focus {
+            background: #000;
+            border-color: var(--osla-orange);
+            color: #fff;
+            box-shadow: 0 0 0 0.25rem rgba(243, 112, 33, 0.25);
+        }
+
+        .input-group-text {
+            background: #000;
+            border: 1px solid #444;
+            color: #fff;
+            cursor: pointer;
+        }
+        
+        .btn-login {
+            background: var(--osla-orange);
+            border: none;
+            color: white;
+            font-weight: bold;
+            padding: 12px;
+            width: 100%;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .btn-login:hover {
+            background: #d96420;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(243, 112, 33, 0.4);
+        }
+        
+        .form-label {
+            color: #ddd;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo">
+                <h1>OSLA<span>PRINT</span></h1>
+                <p class="text-muted mb-0">Sistema de Gestión</p>
+            </div>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert alert-{{ category }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+            
+            <form method="POST" action="/login">
+                <div class="mb-3">
+                    <label class="form-label">Usuario</label>
+                    <input type="text" name="username" class="form-control" placeholder="Ingrese su usuario" required autofocus>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label">Contraseña</label>
+                    <div class="input-group">
+                        <input type="password" id="password" name="password" class="form-control" placeholder="Ingrese su contraseña" required>
+                        <span class="input-group-text" id="togglePassword">
+                            <i class="bi bi-eye"></i>
+                        </span>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-login">INICIAR SESIÓN</button>
+            </form>
+            
+            <div class="text-center mt-4">
+                <small class="text-muted">
+                    Sistema OSLAPRINT © 2026
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        const icon = togglePassword.querySelector('i');
+
+        togglePassword.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+
+            icon.classList.toggle('bi-eye');
+            icon.classList.toggle('bi-eye-slash');
+        });
+    </script>
+</body>
+</html>
