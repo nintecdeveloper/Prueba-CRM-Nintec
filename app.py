@@ -200,6 +200,39 @@ class TimerSession(db.Model):
     user = db.relationship('User', backref='timer_sessions')
     task = db.relationship('Task', backref='timer_sessions')
 
+class PotencialCliente(db.Model):
+    """Potenciales clientes - clientes que aún no han contratado"""
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    phone = db.Column(db.String(20), nullable=False)
+    email = db.Column(db.String(100), nullable=True)
+    address = db.Column(db.String(250), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now)
+
+class TechSalary(db.Model):
+    """Salario asignado a cada técnico"""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), unique=True, nullable=False)
+    user = db.relationship('User', backref=db.backref('salary', uselist=False))
+    amount = db.Column(db.Float, default=0.0)
+    notes = db.Column(db.Text, nullable=True)
+    updated_at = db.Column(db.DateTime, default=datetime.now)
+
+class RecurringPayment(db.Model):
+    """Pagos recurrentes configurados para clientes"""
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id'), nullable=False)
+    client = db.relationship('Client', backref='recurring_payments')
+    concept = db.Column(db.String(200), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    frequency = db.Column(db.String(20), default='monthly')  # monthly, quarterly, semiannual, annual
+    next_date = db.Column(db.String(10), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+
 @login_manager.user_loader
 def load_user(id):
     return User.query.get(int(id))
@@ -4208,6 +4241,243 @@ def _run_migration(conn, sql, description=""):
                 print(f"ℹ  Ya existe: {description} (ignorado)")
         else:
             print(f"⚠  Migración [{description}]: {e}")
+
+
+# ══════════════════════════════════════════════════════════
+# API: POTENCIALES CLIENTES
+# ══════════════════════════════════════════════════════════
+@app.route('/api/potenciales', methods=['GET'])
+@login_required
+def api_get_potenciales():
+    if current_user.role != 'admin':
+        return jsonify({'success': False, 'msg': 'Sin permisos'}), 403
+    potenciales = PotencialCliente.query.order_by(PotencialCliente.name).all()
+    return jsonify({'success': True, 'data': [{
+        'id': p.id, 'name': p.name, 'phone': p.phone,
+        'email': p.email, 'address': p.address, 'notes': p.notes,
+        'created_at': p.created_at.strftime('%Y-%m-%d') if p.created_at else None
+    } for p in potenciales]})
+
+@app.route('/api/potenciales', methods=['POST'])
+@login_required
+def api_add_potencial():
+    if current_user.role != 'admin':
+        return jsonify({'success': False, 'msg': 'Sin permisos'}), 403
+    data = request.get_json() or {}
+    if not data.get('name') or not data.get('phone'):
+        return jsonify({'success': False, 'msg': 'Nombre y teléfono son obligatorios'})
+    p = PotencialCliente(
+        name=data['name'], phone=data['phone'],
+        email=data.get('email'), address=data.get('address'), notes=data.get('notes')
+    )
+    db.session.add(p)
+    db.session.commit()
+    return jsonify({'success': True, 'id': p.id})
+
+@app.route('/api/potenciales/<int:pid>', methods=['PUT'])
+@login_required
+def api_update_potencial(pid):
+    if current_user.role != 'admin':
+        return jsonify({'success': False, 'msg': 'Sin permisos'}), 403
+    p = PotencialCliente.query.get(pid)
+    if not p:
+        return jsonify({'success': False, 'msg': 'No encontrado'})
+    data = request.get_json() or {}
+    if not data.get('name') or not data.get('phone'):
+        return jsonify({'success': False, 'msg': 'Nombre y teléfono son obligatorios'})
+    p.name = data['name']; p.phone = data['phone']
+    p.email = data.get('email'); p.address = data.get('address'); p.notes = data.get('notes')
+    p.updated_at = datetime.now()
+    db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/api/potenciales/<int:pid>', methods=['DELETE'])
+@login_required
+def api_delete_potencial(pid):
+    if current_user.role != 'admin':
+        return jsonify({'success': False, 'msg': 'Sin permisos'}), 403
+    p = PotencialCliente.query.get(pid)
+    if not p:
+        return jsonify({'success': False, 'msg': 'No encontrado'})
+    db.session.delete(p)
+    db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/api/potenciales/<int:pid>/convert', methods=['POST'])
+@login_required
+def api_convert_potencial(pid):
+    if current_user.role != 'admin':
+        return jsonify({'success': False, 'msg': 'Sin permisos'}), 403
+    p = PotencialCliente.query.get(pid)
+    if not p:
+        return jsonify({'success': False, 'msg': 'No encontrado'})
+    # Verificar que no exista ya un cliente con ese nombre
+    existing = Client.query.filter_by(name=p.name).first()
+    if existing:
+        return jsonify({'success': False, 'msg': f'Ya existe un cliente con el nombre "{p.name}"'})
+    client = Client(
+        name=p.name, phone=p.phone, email=p.email,
+        address=p.address, notes=p.notes, has_support=False
+    )
+    db.session.add(client)
+    db.session.delete(p)
+    db.session.commit()
+    return jsonify({'success': True, 'client_id': client.id})
+
+
+# ══════════════════════════════════════════════════════════
+# API: SALARIOS
+# ══════════════════════════════════════════════════════════
+@app.route('/api/salarios', methods=['GET'])
+@login_required
+def api_get_salarios():
+    if current_user.role != 'admin':
+        return jsonify({'success': False, 'msg': 'Sin permisos'}), 403
+    techs = User.query.filter_by(role='tech').order_by(User.username).all()
+    salaries = TechSalary.query.all()
+    sal_map = {s.user_id: s for s in salaries}
+    return jsonify({
+        'success': True,
+        'techs': [{'id': t.id, 'username': t.username} for t in techs],
+        'data': {str(s.user_id): {
+            'amount': s.amount, 'notes': s.notes,
+            'updated_at': s.updated_at.strftime('%Y-%m-%d %H:%M') if s.updated_at else None
+        } for s in salaries}
+    })
+
+@app.route('/api/salarios/<int:user_id>', methods=['POST'])
+@login_required
+def api_set_salario(user_id):
+    if current_user.role != 'admin':
+        return jsonify({'success': False, 'msg': 'Sin permisos'}), 403
+    data = request.get_json() or {}
+    amount = data.get('amount')
+    if amount is None or float(amount) < 0:
+        return jsonify({'success': False, 'msg': 'Importe inválido'})
+    sal = TechSalary.query.filter_by(user_id=user_id).first()
+    if sal:
+        sal.amount = float(amount)
+        sal.notes = data.get('notes', sal.notes)
+        sal.updated_at = datetime.now()
+    else:
+        sal = TechSalary(user_id=user_id, amount=float(amount), notes=data.get('notes'))
+        db.session.add(sal)
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+# ══════════════════════════════════════════════════════════
+# API: PAGOS RECURRENTES
+# ══════════════════════════════════════════════════════════
+@app.route('/api/recurring_payments', methods=['GET'])
+@login_required
+def api_get_recurring():
+    if current_user.role != 'admin':
+        return jsonify({'success': False, 'msg': 'Sin permisos'}), 403
+    items = RecurringPayment.query.order_by(RecurringPayment.next_date).all()
+    return jsonify({'success': True, 'data': [{
+        'id': r.id, 'client_id': r.client_id, 'client_name': r.client.name if r.client else '—',
+        'concept': r.concept, 'amount': r.amount, 'frequency': r.frequency,
+        'next_date': r.next_date, 'notes': r.notes, 'active': r.active,
+        'created_at': r.created_at.strftime('%Y-%m-%d') if r.created_at else None
+    } for r in items]})
+
+@app.route('/api/recurring_payments', methods=['POST'])
+@login_required
+def api_add_recurring():
+    if current_user.role != 'admin':
+        return jsonify({'success': False, 'msg': 'Sin permisos'}), 403
+    data = request.get_json() or {}
+    if not data.get('client_id') or not data.get('concept') or not data.get('amount'):
+        return jsonify({'success': False, 'msg': 'Faltan campos obligatorios'})
+    r = RecurringPayment(
+        client_id=int(data['client_id']),
+        concept=data['concept'], amount=float(data['amount']),
+        frequency=data.get('frequency', 'monthly'),
+        next_date=data.get('next_date'), notes=data.get('notes'), active=True
+    )
+    db.session.add(r)
+    db.session.commit()
+    return jsonify({'success': True, 'id': r.id})
+
+@app.route('/api/recurring_payments/<int:rid>/register', methods=['POST'])
+@login_required
+def api_register_recurring(rid):
+    if current_user.role != 'admin':
+        return jsonify({'success': False, 'msg': 'Sin permisos'}), 403
+    r = RecurringPayment.query.get(rid)
+    if not r:
+        return jsonify({'success': False, 'msg': 'No encontrado'})
+    # Registrar cobro en PaymentRecord si el cliente tiene ClientPayment
+    cp = ClientPayment.query.filter_by(client_id=r.client_id).first()
+    if not cp:
+        cp = ClientPayment(client_id=r.client_id, total_amount=r.amount)
+        db.session.add(cp)
+        db.session.flush()
+    rec = PaymentRecord(client_payment_id=cp.id, amount=r.amount,
+                        date=date.today(), notes=f'Recurrente: {r.concept}', is_paid=True)
+    db.session.add(rec)
+    # Actualizar próxima fecha
+    from datetime import timedelta
+    freq_days = {'monthly': 30, 'quarterly': 91, 'semiannual': 182, 'annual': 365}
+    days = freq_days.get(r.frequency, 30)
+    try:
+        nd = datetime.strptime(r.next_date, '%Y-%m-%d') + timedelta(days=days)
+        r.next_date = nd.strftime('%Y-%m-%d')
+    except Exception:
+        r.next_date = (datetime.now() + timedelta(days=days)).strftime('%Y-%m-%d')
+    db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/api/recurring_payments/<int:rid>/toggle', methods=['POST'])
+@login_required
+def api_toggle_recurring(rid):
+    if current_user.role != 'admin':
+        return jsonify({'success': False, 'msg': 'Sin permisos'}), 403
+    r = RecurringPayment.query.get(rid)
+    if not r:
+        return jsonify({'success': False, 'msg': 'No encontrado'})
+    r.active = not r.active
+    db.session.commit()
+    return jsonify({'success': True, 'active': r.active})
+
+@app.route('/api/recurring_payments/<int:rid>', methods=['DELETE'])
+@login_required
+def api_delete_recurring(rid):
+    if current_user.role != 'admin':
+        return jsonify({'success': False, 'msg': 'Sin permisos'}), 403
+    r = RecurringPayment.query.get(rid)
+    if not r:
+        return jsonify({'success': False, 'msg': 'No encontrado'})
+    db.session.delete(r)
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+# ══════════════════════════════════════════════════════════
+# API: HISTORIAL DE PAGOS
+# ══════════════════════════════════════════════════════════
+@app.route('/api/payment_history', methods=['GET'])
+@login_required
+def api_payment_history():
+    if current_user.role != 'admin':
+        return jsonify({'success': False, 'msg': 'Sin permisos'}), 403
+    records = db.session.query(PaymentRecord, ClientPayment, Client)\
+        .join(ClientPayment, PaymentRecord.client_payment_id == ClientPayment.id)\
+        .join(Client, ClientPayment.client_id == Client.id)\
+        .order_by(PaymentRecord.date.desc())\
+        .all()
+    data = []
+    for rec, cp, client in records:
+        data.append({
+            'id': rec.id, 'client_id': client.id, 'client_name': client.name,
+            'amount': rec.amount,
+            'date': rec.date.strftime('%Y-%m-%d') if rec.date else None,
+            'notes': rec.notes, 'is_paid': rec.is_paid, 'type': 'manual'
+        })
+    # Add recurring payment history
+    recurring = RecurringPayment.query.all()
+    return jsonify({'success': True, 'data': data})
 
 
 def initialize_database():

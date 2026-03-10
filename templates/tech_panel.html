@@ -1330,7 +1330,8 @@
             }
 
             // ✅ Inicializar firma + cargar draft cuando se muestra el parte
-             catch(e) {} }, 100);
+            if (id === 'section-parte') {
+                setTimeout(() => { try { initSignaturePad(); } catch(e) {} }, 100);
                 // Solo cargar draft si no hay datos pre-cargados desde una cita
                 if (!_partePreloaded) {
                     setTimeout(() => loadDraft(), 200);

@@ -567,6 +567,10 @@
             <li class="nav-item"><button class="nav-link w-100" data-bs-toggle="tab"
                     data-bs-target="#clients">CLIENTES</button></li>
             <li class="nav-item"><button class="nav-link w-100" data-bs-toggle="tab"
+                    data-bs-target="#potenciales" id="tabPotencialesBtn" onclick="loadPotencialesList()">POTENCIALES</button></li>
+            <li class="nav-item"><button class="nav-link w-100" data-bs-toggle="tab"
+                    data-bs-target="#salarios" id="tabSalariosBtn" onclick="loadSalariosList()">SALARIOS</button></li>
+            <li class="nav-item"><button class="nav-link w-100" data-bs-toggle="tab"
                     data-bs-target="#pagos" id="tabPagosBtn" onclick="loadPaymentsList()">PAGOS</button></li>
 
         </ul>
@@ -744,24 +748,6 @@
 
                 <!-- Gráficos -->
                 <div class="row g-3">
-                    <!-- Gráfico Circular de Tipos de Tareas -->
-                    <div class="col-md-6">
-                        <div class="card bg-dark border-secondary">
-                            <div class="card-header bg-black border-secondary">
-                                <h6 class="text-white fw-bold mb-0">
-                                    <i class="bi bi-pie-chart-fill me-2 text-warning"></i>
-                                    Distribución por Tipo de Servicio
-                                </h6>
-                            </div>
-                            <div class="card-body">
-                                <canvas id="taskTypesPieChart" style="max-height: 300px;"></canvas>
-                                <div id="noPieData" class="text-center text-muted py-5" style="display: none;">
-                                    <i class="bi bi-info-circle fs-1"></i>
-                                    <p class="mt-2">No hay datos disponibles</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -976,6 +962,74 @@
 
 
             <!-- ======================================================= -->
+            <!-- PESTAÑA POTENCIALES CLIENTES                            -->
+            <!-- ======================================================= -->
+            <div class="tab-pane fade" id="potenciales">
+                <div class="d-flex justify-content-between mb-3 align-items-center flex-wrap gap-2">
+                    <h4 class="fw-bold text-white fs-5 m-0">
+                        <i class="bi bi-person-plus-fill me-2 text-info"></i>Potenciales Clientes
+                    </h4>
+                    <div class="d-flex gap-2">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" id="btnPotViewCards" class="btn btn-warning active" onclick="setPotencialesView('cards')" title="Vista fichas">
+                                <i class="bi bi-grid-3x3-gap-fill"></i>
+                            </button>
+                            <button type="button" id="btnPotViewList" class="btn btn-outline-warning" onclick="setPotencialesView('list')" title="Vista lista">
+                                <i class="bi bi-list-ul"></i>
+                            </button>
+                        </div>
+                        <button class="btn btn-warning btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#modalAddPotencial">
+                            <i class="bi bi-person-plus-fill me-1"></i> Nuevo Potencial
+                        </button>
+                    </div>
+                </div>
+
+                <input type="text" id="potSearchInput" class="form-control mb-3" placeholder="🔍 Buscar potencial cliente..."
+                    onkeyup="filterPotencialesView()">
+
+                <!-- Vista fichas -->
+                <div class="row g-3" id="potencialesCardContainer">
+                    <div class="col-12 text-center text-muted py-5">
+                        <div class="spinner-border spinner-border-sm me-2"></div>Cargando...
+                    </div>
+                </div>
+
+                <!-- Vista lista -->
+                <div id="potencialesListContainer" style="display:none;">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover table-sm align-middle">
+                            <thead class="table-secondary">
+                                <tr>
+                                    <th>Nombre</th><th>Teléfono</th><th>Email</th><th>Dirección</th><th>Notas</th><th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="potencialesListBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- ======================================================= -->
+            <!-- PESTAÑA SALARIOS                                         -->
+            <!-- ======================================================= -->
+            <div class="tab-pane fade" id="salarios">
+                <div class="d-flex justify-content-between mb-3 align-items-center flex-wrap gap-2">
+                    <h4 class="fw-bold text-white fs-5 m-0">
+                        <i class="bi bi-cash-stack me-2 text-success"></i>Gestión de Salarios
+                    </h4>
+                    <span class="text-muted small">Asignación manual de salarios por técnico</span>
+                </div>
+
+                <div class="row g-3" id="salariosContainer">
+                    <div class="col-12 text-center text-muted py-5">
+                        <div class="spinner-border spinner-border-sm me-2"></div>Cargando...
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- ======================================================= -->
             <!-- PESTAÑA PAGOS                                            -->
             <!-- ======================================================= -->
             <div class="tab-pane fade" id="pagos">
@@ -986,6 +1040,28 @@
                     <span class="text-muted small" id="pagosTotalCount"></span>
                 </div>
 
+                <!-- Sub-tabs de Pagos -->
+                <ul class="nav nav-tabs mb-4 border-secondary" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active text-white" data-bs-toggle="tab" data-bs-target="#pagos-clientes" onclick="loadPaymentsList()">
+                            <i class="bi bi-people me-1"></i>Pagos Clientes
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link text-white" data-bs-toggle="tab" data-bs-target="#pagos-recurrentes" onclick="loadRecurringPayments()">
+                            <i class="bi bi-arrow-repeat me-1"></i>Recurrentes
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link text-white" data-bs-toggle="tab" data-bs-target="#pagos-historial" onclick="loadPaymentHistory()">
+                            <i class="bi bi-clock-history me-1"></i>Historial
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                <!-- ── Pagos Clientes ── -->
+                <div class="tab-pane fade show active" id="pagos-clientes">
                 <!-- Buscador para añadir clientes sin pago -->
                 <div class="card bg-dark border-secondary mb-3">
                     <div class="card-body py-2">
@@ -1026,7 +1102,79 @@
                         Cargando clientes...
                     </div>
                 </div>
-            </div>
+                </div><!-- /pagos-clientes -->
+
+                <!-- ── Pagos Recurrentes ── -->
+                <div class="tab-pane fade" id="pagos-recurrentes">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <h5 class="text-white fw-bold m-0"><i class="bi bi-arrow-repeat me-2 text-info"></i>Cobros Recurrentes</h5>
+                        <button class="btn btn-warning btn-sm fw-bold" onclick="openAddRecurringModal()">
+                            <i class="bi bi-plus-lg me-1"></i>Nuevo Recurrente
+                        </button>
+                    </div>
+                    <p class="text-muted small mb-3"><i class="bi bi-info-circle me-1"></i>Configura cobros que se repiten automáticamente (mensual, trimestral, anual...)</p>
+                    <div id="recurringPaymentsContainer">
+                        <div class="text-center text-muted py-5"><div class="spinner-border spinner-border-sm me-2"></div>Cargando...</div>
+                    </div>
+                </div>
+
+                <!-- ── Historial de Pagos ── -->
+                <div class="tab-pane fade" id="pagos-historial">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <h5 class="text-white fw-bold m-0"><i class="bi bi-clock-history me-2 text-warning"></i>Historial de Todos los Pagos</h5>
+                        <div class="d-flex gap-2 align-items-center flex-wrap">
+                            <select id="histFilterMonth" class="form-select form-select-sm bg-black text-white border-secondary" style="max-width:160px;" onchange="loadPaymentHistory()">
+                                <option value="">Todos los meses</option>
+                            </select>
+                            <input type="text" id="histSearchInput" class="form-control form-control-sm bg-black text-white border-secondary" placeholder="🔍 Buscar..." style="max-width:200px;" oninput="renderPaymentHistory()">
+                        </div>
+                    </div>
+                    <!-- KPIs historial -->
+                    <div class="row g-3 mb-3" id="histKPIs">
+                        <div class="col-6 col-md-3">
+                            <div class="card bg-dark border-success text-center p-3">
+                                <i class="bi bi-check-circle fs-2 text-success"></i>
+                                <h4 class="text-white mb-0 mt-1" id="histTotalPaid">—</h4>
+                                <small class="text-muted">Total Cobrado</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card bg-dark border-danger text-center p-3">
+                                <i class="bi bi-clock fs-2 text-danger"></i>
+                                <h4 class="text-white mb-0 mt-1" id="histTotalPending">—</h4>
+                                <small class="text-muted">Pendiente</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card bg-dark border-info text-center p-3">
+                                <i class="bi bi-receipt fs-2 text-info"></i>
+                                <h4 class="text-white mb-0 mt-1" id="histTotalRecords">—</h4>
+                                <small class="text-muted">Nº Cobros</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card bg-dark border-warning text-center p-3">
+                                <i class="bi bi-people fs-2 text-warning"></i>
+                                <h4 class="text-white mb-0 mt-1" id="histTotalClients">—</h4>
+                                <small class="text-muted">Clientes</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover table-sm align-middle">
+                            <thead class="table-secondary">
+                                <tr>
+                                    <th>Fecha</th><th>Cliente</th><th>Importe</th><th>Estado</th><th>Notas</th><th>Tipo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="histTableBody">
+                                <tr><td colspan="6" class="text-center text-muted py-4">Cargando historial...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                </div><!-- /tab-content pagos -->
+            </div><!-- /pagos -->
 
 
             <!-- ═══════════════════ PESTAÑA EQUIPO ═══════════════════ -->
@@ -6433,6 +6581,656 @@ function _esc(s) {
                     alert('❌ Error al descargar los clientes');
                 });
         }
+</script>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- MODAL: Añadir Potencial Cliente                     -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalAddPotencial" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title"><i class="bi bi-person-plus-fill me-2 text-info"></i>Nuevo Potencial Cliente</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Nombre <span class="text-warning">*</span></label>
+                        <input type="text" id="potAddName" class="form-control" required placeholder="Nombre o empresa">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Teléfono <span class="text-warning">*</span></label>
+                        <input type="tel" id="potAddPhone" class="form-control" required placeholder="Ej: 912345678">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" id="potAddEmail" class="form-control" placeholder="ejemplo@email.com">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" id="potAddAddress" class="form-control" placeholder="Calle, número, ciudad">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Notas Internas</label>
+                    <textarea id="potAddNotes" class="form-control" rows="2" placeholder="Comentarios sobre este potencial cliente..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" onclick="savePotencial()">
+                    <i class="bi bi-save-fill me-1"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- MODAL: Editar Potencial Cliente                     -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalEditPotencial" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Editar Potencial Cliente</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="potEditId">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Nombre <span class="text-warning">*</span></label>
+                        <input type="text" id="potEditName" class="form-control" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Teléfono <span class="text-warning">*</span></label>
+                        <input type="tel" id="potEditPhone" class="form-control" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" id="potEditEmail" class="form-control">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" id="potEditAddress" class="form-control">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Notas Internas</label>
+                    <textarea id="potEditNotes" class="form-control" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" onclick="updatePotencial()">
+                    <i class="bi bi-save-fill me-1"></i>Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- MODAL: Nuevo Pago Recurrente                        -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalAddRecurring" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title"><i class="bi bi-arrow-repeat me-2 text-info"></i>Nuevo Cobro Recurrente</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3 position-relative">
+                    <label class="form-label">Cliente <span class="text-warning">*</span></label>
+                    <input type="text" id="recurClientSearch" class="form-control" autocomplete="off" placeholder="Buscar cliente..." oninput="searchClientForRecurring()">
+                    <input type="hidden" id="recurClientId">
+                    <div id="recurClientList" class="suggestions-list" style="z-index:9999;"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Concepto <span class="text-warning">*</span></label>
+                        <input type="text" id="recurConcept" class="form-control" placeholder="Ej: Mantenimiento mensual">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Importe (€) <span class="text-warning">*</span></label>
+                        <input type="number" id="recurAmount" class="form-control" step="0.01" min="0" placeholder="0.00">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Frecuencia <span class="text-warning">*</span></label>
+                        <select id="recurFrequency" class="form-select bg-black text-white border-secondary">
+                            <option value="monthly">Mensual</option>
+                            <option value="quarterly">Trimestral</option>
+                            <option value="semiannual">Semestral</option>
+                            <option value="annual">Anual</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Próxima Fecha <span class="text-warning">*</span></label>
+                        <input type="date" id="recurNextDate" class="form-control">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Notas</label>
+                    <textarea id="recurNotes" class="form-control" rows="2" placeholder="Notas adicionales..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-info fw-bold" onclick="saveRecurringPayment()">
+                    <i class="bi bi-save-fill me-1"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// POTENCIALES CLIENTES
+// ══════════════════════════════════════════════════════════
+let _potencialesData = [];
+let _potencialesView = 'cards';
+
+function loadPotencialesList() {
+    fetch('/api/potenciales')
+        .then(r => r.json())
+        .then(data => {
+            _potencialesData = data.data || [];
+            renderPotencialesView();
+        })
+        .catch(() => {
+            document.getElementById('potencialesCardContainer').innerHTML =
+                '<div class="col-12 alert alert-danger">Error al cargar potenciales</div>';
+        });
+}
+
+function setPotencialesView(v) {
+    _potencialesView = v;
+    document.getElementById('btnPotViewCards').classList.toggle('active', v === 'cards');
+    document.getElementById('btnPotViewList').classList.toggle('active', v === 'list');
+    document.getElementById('btnPotViewCards').classList.toggle('btn-warning', v === 'cards');
+    document.getElementById('btnPotViewCards').classList.toggle('btn-outline-warning', v !== 'cards');
+    document.getElementById('btnPotViewList').classList.toggle('btn-warning', v === 'list');
+    document.getElementById('btnPotViewList').classList.toggle('btn-outline-warning', v !== 'list');
+    document.getElementById('potencialesCardContainer').style.display = v === 'cards' ? '' : 'none';
+    document.getElementById('potencialesListContainer').style.display = v === 'list' ? '' : 'none';
+    renderPotencialesView();
+}
+
+function filterPotencialesView() {
+    renderPotencialesView();
+}
+
+function renderPotencialesView() {
+    const q = (document.getElementById('potSearchInput').value || '').toLowerCase();
+    const filtered = _potencialesData.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        (p.phone || '').includes(q) ||
+        (p.email || '').toLowerCase().includes(q)
+    );
+    if (_potencialesView === 'cards') renderPotencialesCards(filtered);
+    else renderPotencialesList(filtered);
+}
+
+function renderPotencialesCards(items) {
+    const container = document.getElementById('potencialesCardContainer');
+    if (!items.length) {
+        container.innerHTML = '<div class="col-12"><div class="alert alert-info text-center"><i class="bi bi-info-circle me-2"></i>No hay potenciales clientes registrados. Haz clic en "Nuevo Potencial" para añadir uno.</div></div>';
+        return;
+    }
+    container.innerHTML = items.map(p => `
+        <div class="col-12 col-md-6 col-lg-4 pot-card-wrapper" data-name="${(p.name||'').toLowerCase()}">
+            <div class="card bg-dark border-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="card-title text-info fw-bold mb-0">${_esc(p.name)}</h6>
+                        <span class="badge bg-info bg-opacity-25 border border-info text-info" style="font-size:0.7rem;">POTENCIAL</span>
+                    </div>
+                    <hr class="border-secondary my-2">
+                    <div class="small mb-1"><i class="bi bi-telephone-fill text-info me-2"></i><a href="tel:${p.phone}" class="text-decoration-none text-white">${p.phone||'—'}</a></div>
+                    <div class="small mb-1"><i class="bi bi-envelope-fill text-info me-2"></i><span class="text-muted">${p.email||'—'}</span></div>
+                    <div class="small mb-2"><i class="bi bi-geo-alt-fill text-info me-2"></i><span class="text-muted">${p.address||'—'}</span></div>
+                    ${p.notes ? `<div class="small text-muted fst-italic border-top border-secondary pt-2 mt-2"><i class="bi bi-sticky-fill me-1"></i>${_esc(p.notes.substring(0,60))}${p.notes.length>60?'...':''}</div>` : ''}
+                </div>
+                <div class="card-footer bg-black border-info">
+                    <div class="d-flex gap-2 mb-2">
+                        <button class="btn btn-sm btn-success flex-fill fw-bold" onclick="convertPotencialToClient(${p.id}, '${_esc(p.name)}')">
+                            <i class="bi bi-person-check-fill me-1"></i>Convertir a Cliente
+                        </button>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-warning flex-fill" onclick="editPotencial(${p.id})">
+                            <i class="bi bi-pencil-fill"></i> Editar
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger flex-fill" onclick="deletePotencial(${p.id}, '${_esc(p.name)}')">
+                            <i class="bi bi-trash-fill"></i> Eliminar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderPotencialesList(items) {
+    const tbody = document.getElementById('potencialesListBody');
+    if (!items.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">No hay potenciales clientes</td></tr>';
+        return;
+    }
+    tbody.innerHTML = items.map(p => `
+        <tr>
+            <td class="text-info fw-bold">${_esc(p.name)}</td>
+            <td>${p.phone||'—'}</td>
+            <td>${p.email||'—'}</td>
+            <td class="text-muted small">${p.address||'—'}</td>
+            <td class="text-muted small">${p.notes||'—'}</td>
+            <td>
+                <div class="d-flex gap-1">
+                    <button class="btn btn-xs btn-success py-0 px-1" onclick="convertPotencialToClient(${p.id},'${_esc(p.name)}')" title="Convertir a cliente"><i class="bi bi-person-check-fill"></i></button>
+                    <button class="btn btn-xs btn-outline-warning py-0 px-1" onclick="editPotencial(${p.id})" title="Editar"><i class="bi bi-pencil-fill"></i></button>
+                    <button class="btn btn-xs btn-outline-danger py-0 px-1" onclick="deletePotencial(${p.id},'${_esc(p.name)}')" title="Eliminar"><i class="bi bi-trash-fill"></i></button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function savePotencial() {
+    const name = document.getElementById('potAddName').value.trim();
+    const phone = document.getElementById('potAddPhone').value.trim();
+    if (!name || !phone) { alert('Nombre y teléfono son obligatorios'); return; }
+    fetch('/api/potenciales', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+            name, phone,
+            email: document.getElementById('potAddEmail').value.trim(),
+            address: document.getElementById('potAddAddress').value.trim(),
+            notes: document.getElementById('potAddNotes').value.trim()
+        })
+    }).then(r => r.json()).then(d => {
+        if (d.success) {
+            bootstrap.Modal.getInstance(document.getElementById('modalAddPotencial')).hide();
+            ['potAddName','potAddPhone','potAddEmail','potAddAddress','potAddNotes'].forEach(id => document.getElementById(id).value = '');
+            loadPotencialesList();
+            showAdminToast('✅ Potencial cliente añadido', 'success');
+        } else { alert('Error: ' + (d.msg || 'No se pudo guardar')); }
+    }).catch(() => alert('Error de conexión'));
+}
+
+function editPotencial(id) {
+    const p = _potencialesData.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('potEditId').value = p.id;
+    document.getElementById('potEditName').value = p.name;
+    document.getElementById('potEditPhone').value = p.phone||'';
+    document.getElementById('potEditEmail').value = p.email||'';
+    document.getElementById('potEditAddress').value = p.address||'';
+    document.getElementById('potEditNotes').value = p.notes||'';
+    new bootstrap.Modal(document.getElementById('modalEditPotencial')).show();
+}
+
+function updatePotencial() {
+    const id = document.getElementById('potEditId').value;
+    const name = document.getElementById('potEditName').value.trim();
+    const phone = document.getElementById('potEditPhone').value.trim();
+    if (!name || !phone) { alert('Nombre y teléfono son obligatorios'); return; }
+    fetch('/api/potenciales/' + id, {
+        method: 'PUT',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+            name, phone,
+            email: document.getElementById('potEditEmail').value.trim(),
+            address: document.getElementById('potEditAddress').value.trim(),
+            notes: document.getElementById('potEditNotes').value.trim()
+        })
+    }).then(r => r.json()).then(d => {
+        if (d.success) {
+            bootstrap.Modal.getInstance(document.getElementById('modalEditPotencial')).hide();
+            loadPotencialesList();
+            showAdminToast('✅ Potencial actualizado', 'success');
+        } else { alert('Error: ' + (d.msg || 'No se pudo actualizar')); }
+    }).catch(() => alert('Error de conexión'));
+}
+
+function deletePotencial(id, name) {
+    if (!confirm('¿Eliminar potencial cliente "' + name + '"?')) return;
+    fetch('/api/potenciales/' + id, { method: 'DELETE' })
+        .then(r => r.json()).then(d => {
+            if (d.success) { loadPotencialesList(); showAdminToast('🗑️ Eliminado', 'info'); }
+            else { alert('Error: ' + (d.msg || '')); }
+        }).catch(() => alert('Error de conexión'));
+}
+
+function convertPotencialToClient(id, name) {
+    if (!confirm('¿Convertir "' + name + '" en cliente real? Se moverá a la lista de clientes.')) return;
+    fetch('/api/potenciales/' + id + '/convert', { method: 'POST' })
+        .then(r => r.json()).then(d => {
+            if (d.success) {
+                loadPotencialesList();
+                showAdminToast('✅ ¡"' + name + '" convertido a cliente!', 'success');
+            } else { alert('Error: ' + (d.msg || '')); }
+        }).catch(() => alert('Error de conexión'));
+}
+
+// ══════════════════════════════════════════════════════════
+// SALARIOS
+// ══════════════════════════════════════════════════════════
+let _salariosData = {};
+
+function loadSalariosList() {
+    fetch('/api/salarios')
+        .then(r => r.json())
+        .then(data => {
+            _salariosData = data.data || {};
+            renderSalarios(data.techs || []);
+        })
+        .catch(() => {
+            document.getElementById('salariosContainer').innerHTML =
+                '<div class="col-12 alert alert-danger">Error al cargar técnicos</div>';
+        });
+}
+
+function renderSalarios(techs) {
+    const container = document.getElementById('salariosContainer');
+    if (!techs.length) {
+        container.innerHTML = '<div class="col-12 alert alert-info text-center">No hay técnicos registrados</div>';
+        return;
+    }
+    container.innerHTML = techs.map(t => {
+        const salary = _salariosData[t.id] || {};
+        return `
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card bg-dark border-secondary">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3 gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:linear-gradient(135deg,#7c3aed,#00d4ff);">
+                            <i class="bi bi-person-fill text-white fs-4"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-white fw-bold mb-0">${_esc(t.username)}</h6>
+                            <small class="text-muted">ID #${t.id}</small>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label text-muted small fw-bold"><i class="bi bi-cash me-1"></i>SALARIO BRUTO MENSUAL (€)</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-black text-white border-secondary">€</span>
+                            <input type="number" class="form-control bg-black text-white border-secondary"
+                                id="salary_${t.id}" value="${salary.amount || ''}" step="0.01" min="0"
+                                placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold"><i class="bi bi-sticky me-1"></i>NOTAS</label>
+                        <input type="text" class="form-control form-control-sm bg-black text-white border-secondary"
+                            id="salary_notes_${t.id}" value="${_esc(salary.notes || '')}"
+                            placeholder="Tipo de contrato, horas, etc.">
+                    </div>
+                    <div class="text-muted small mb-2">
+                        ${salary.updated_at ? '<i class="bi bi-clock me-1"></i>Actualizado: ' + salary.updated_at : '<i class="bi bi-dash me-1"></i>Sin salario asignado'}
+                    </div>
+                    <button class="btn btn-warning btn-sm w-100 fw-bold" onclick="saveSalario(${t.id}, '${_esc(t.username)}')">
+                        <i class="bi bi-save-fill me-1"></i>Guardar Salario
+                    </button>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function saveSalario(techId, techName) {
+    const amount = document.getElementById('salary_' + techId).value;
+    const notes = document.getElementById('salary_notes_' + techId).value;
+    if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) < 0) {
+        alert('Introduce un importe válido');
+        return;
+    }
+    fetch('/api/salarios/' + techId, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ amount: parseFloat(amount), notes })
+    }).then(r => r.json()).then(d => {
+        if (d.success) {
+            showAdminToast('✅ Salario de ' + techName + ' guardado: €' + parseFloat(amount).toFixed(2), 'success');
+            loadSalariosList();
+        } else { alert('Error: ' + (d.msg || '')); }
+    }).catch(() => alert('Error de conexión'));
+}
+
+// ══════════════════════════════════════════════════════════
+// PAGOS RECURRENTES
+// ══════════════════════════════════════════════════════════
+let _recurringData = [];
+
+function openAddRecurringModal() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('recurNextDate').value = today;
+    document.getElementById('recurClientSearch').value = '';
+    document.getElementById('recurClientId').value = '';
+    document.getElementById('recurConcept').value = '';
+    document.getElementById('recurAmount').value = '';
+    document.getElementById('recurNotes').value = '';
+    new bootstrap.Modal(document.getElementById('modalAddRecurring')).show();
+}
+
+function searchClientForRecurring() {
+    const q = document.getElementById('recurClientSearch').value.trim();
+    const list = document.getElementById('recurClientList');
+    if (q.length < 2) { list.style.display = 'none'; return; }
+    fetch('/api/clients_search?q=' + encodeURIComponent(q))
+        .then(r => r.json()).then(items => {
+            list.innerHTML = '';
+            if (!items.length) { list.style.display = 'none'; return; }
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.textContent = item.name;
+                div.onmousedown = (e) => {
+                    e.preventDefault();
+                    document.getElementById('recurClientSearch').value = item.name;
+                    document.getElementById('recurClientId').value = item.id;
+                    list.style.display = 'none';
+                };
+                list.appendChild(div);
+            });
+            list.style.display = 'block';
+        });
+    document.getElementById('recurClientSearch').onblur = () => setTimeout(() => list.style.display = 'none', 150);
+}
+
+function loadRecurringPayments() {
+    fetch('/api/recurring_payments')
+        .then(r => r.json())
+        .then(data => {
+            _recurringData = data.data || [];
+            renderRecurringPayments();
+        })
+        .catch(() => {
+            document.getElementById('recurringPaymentsContainer').innerHTML =
+                '<div class="alert alert-danger">Error al cargar pagos recurrentes</div>';
+        });
+}
+
+function renderRecurringPayments() {
+    const container = document.getElementById('recurringPaymentsContainer');
+    if (!_recurringData.length) {
+        container.innerHTML = '<div class="alert alert-info text-center"><i class="bi bi-info-circle me-2"></i>No hay pagos recurrentes configurados.</div>';
+        return;
+    }
+    const freqLabels = { monthly: 'Mensual', quarterly: 'Trimestral', semiannual: 'Semestral', annual: 'Anual' };
+    container.innerHTML = '<div class="table-responsive"><table class="table table-dark table-hover table-sm align-middle"><thead class="table-secondary"><tr><th>Cliente</th><th>Concepto</th><th>Importe</th><th>Frecuencia</th><th>Próxima Fecha</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>' +
+        _recurringData.map(r => {
+            const isOverdue = r.next_date && r.next_date < new Date().toISOString().split('T')[0];
+            return `<tr>
+                <td class="fw-bold text-white">${_esc(r.client_name)}</td>
+                <td>${_esc(r.concept)}</td>
+                <td class="text-success fw-bold">€${parseFloat(r.amount).toFixed(2)}</td>
+                <td><span class="badge bg-info bg-opacity-25 border border-info text-info">${freqLabels[r.frequency]||r.frequency}</span></td>
+                <td class="${isOverdue?'text-danger fw-bold':'text-white'}">${r.next_date||'—'}${isOverdue?' <i class="bi bi-exclamation-triangle-fill"></i>':''}</td>
+                <td><span class="badge ${r.active?'bg-success':'bg-secondary'}">${r.active?'Activo':'Pausado'}</span></td>
+                <td>
+                    <div class="d-flex gap-1">
+                        <button class="btn btn-xs btn-outline-warning py-0 px-1" onclick="registerRecurringPayment(${r.id})" title="Registrar cobro"><i class="bi bi-check-circle"></i></button>
+                        <button class="btn btn-xs ${r.active?'btn-outline-secondary':'btn-outline-success'} py-0 px-1" onclick="toggleRecurring(${r.id})" title="${r.active?'Pausar':'Activar'}"><i class="bi bi-${r.active?'pause':'play'}-fill"></i></button>
+                        <button class="btn btn-xs btn-outline-danger py-0 px-1" onclick="deleteRecurring(${r.id})" title="Eliminar"><i class="bi bi-trash-fill"></i></button>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('') +
+        '</tbody></table></div>';
+}
+
+function saveRecurringPayment() {
+    const clientId = document.getElementById('recurClientId').value;
+    const concept = document.getElementById('recurConcept').value.trim();
+    const amount = document.getElementById('recurAmount').value;
+    const frequency = document.getElementById('recurFrequency').value;
+    const nextDate = document.getElementById('recurNextDate').value;
+    if (!clientId || !concept || !amount || !nextDate) {
+        alert('Completa todos los campos obligatorios');
+        return;
+    }
+    fetch('/api/recurring_payments', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+            client_id: clientId, concept, amount: parseFloat(amount),
+            frequency, next_date: nextDate,
+            notes: document.getElementById('recurNotes').value.trim()
+        })
+    }).then(r => r.json()).then(d => {
+        if (d.success) {
+            bootstrap.Modal.getInstance(document.getElementById('modalAddRecurring')).hide();
+            loadRecurringPayments();
+            showAdminToast('✅ Pago recurrente creado', 'success');
+        } else { alert('Error: ' + (d.msg||'')); }
+    }).catch(() => alert('Error de conexión'));
+}
+
+function registerRecurringPayment(id) {
+    if (!confirm('¿Registrar este cobro como pagado y actualizar la próxima fecha?')) return;
+    fetch('/api/recurring_payments/' + id + '/register', { method: 'POST' })
+        .then(r => r.json()).then(d => {
+            if (d.success) { loadRecurringPayments(); showAdminToast('✅ Cobro registrado', 'success'); }
+            else { alert('Error: ' + (d.msg||'')); }
+        }).catch(() => alert('Error de conexión'));
+}
+
+function toggleRecurring(id) {
+    fetch('/api/recurring_payments/' + id + '/toggle', { method: 'POST' })
+        .then(r => r.json()).then(d => {
+            if (d.success) { loadRecurringPayments(); }
+            else { alert('Error: ' + (d.msg||'')); }
+        }).catch(() => alert('Error de conexión'));
+}
+
+function deleteRecurring(id) {
+    if (!confirm('¿Eliminar este pago recurrente?')) return;
+    fetch('/api/recurring_payments/' + id, { method: 'DELETE' })
+        .then(r => r.json()).then(d => {
+            if (d.success) { loadRecurringPayments(); showAdminToast('🗑️ Eliminado', 'info'); }
+            else { alert('Error: ' + (d.msg||'')); }
+        }).catch(() => alert('Error de conexión'));
+}
+
+// ══════════════════════════════════════════════════════════
+// HISTORIAL DE PAGOS
+// ══════════════════════════════════════════════════════════
+let _historyData = [];
+
+function loadPaymentHistory() {
+    fetch('/api/payment_history')
+        .then(r => r.json())
+        .then(data => {
+            _historyData = data.data || [];
+            populateHistMonths();
+            updateHistKPIs();
+            renderPaymentHistory();
+        })
+        .catch(() => {
+            document.getElementById('histTableBody').innerHTML =
+                '<tr><td colspan="6" class="text-center text-danger py-3">Error al cargar historial</td></tr>';
+        });
+}
+
+function populateHistMonths() {
+    const sel = document.getElementById('histFilterMonth');
+    const current = sel.value;
+    const months = new Set();
+    _historyData.forEach(r => { if (r.date) months.add(r.date.substring(0,7)); });
+    const sorted = Array.from(months).sort().reverse();
+    sel.innerHTML = '<option value="">Todos los meses</option>' +
+        sorted.map(m => `<option value="${m}" ${m===current?'selected':''}>${m}</option>`).join('');
+}
+
+function updateHistKPIs() {
+    const paid = _historyData.filter(r => r.is_paid);
+    const pending = _historyData.filter(r => !r.is_paid);
+    const clients = new Set(_historyData.map(r => r.client_id));
+    document.getElementById('histTotalPaid').textContent = '€' + paid.reduce((s,r)=>s+parseFloat(r.amount||0),0).toFixed(2);
+    document.getElementById('histTotalPending').textContent = '€' + pending.reduce((s,r)=>s+parseFloat(r.amount||0),0).toFixed(2);
+    document.getElementById('histTotalRecords').textContent = _historyData.length;
+    document.getElementById('histTotalClients').textContent = clients.size;
+}
+
+function renderPaymentHistory() {
+    const q = (document.getElementById('histSearchInput').value||'').toLowerCase();
+    const month = document.getElementById('histFilterMonth').value;
+    const filtered = _historyData.filter(r => {
+        const matchQ = !q || (r.client_name||'').toLowerCase().includes(q) || (r.notes||'').toLowerCase().includes(q);
+        const matchM = !month || (r.date||'').startsWith(month);
+        return matchQ && matchM;
+    });
+    const tbody = document.getElementById('histTableBody');
+    if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No hay cobros en este período</td></tr>';
+        return;
+    }
+    tbody.innerHTML = filtered.map(r => `
+        <tr>
+            <td class="text-muted small">${r.date||'—'}</td>
+            <td class="text-white fw-bold">${_esc(r.client_name||'—')}</td>
+            <td class="fw-bold ${r.is_paid?'text-success':'text-danger'}">€${parseFloat(r.amount||0).toFixed(2)}</td>
+            <td>${r.is_paid
+                ? '<span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i>Pagado</span>'
+                : '<span class="badge bg-danger"><i class="bi bi-clock-fill me-1"></i>Pendiente</span>'}</td>
+            <td class="text-muted small">${_esc(r.notes||'—')}</td>
+            <td><span class="badge bg-secondary">${_esc(r.type||'manual')}</span></td>
+        </tr>
+    `).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+// TOAST HELPER
+// ══════════════════════════════════════════════════════════
+function showAdminToast(msg, type) {
+    let container = document.getElementById('adminToastContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'adminToastContainer';
+        container.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:8px;';
+        document.body.appendChild(container);
+    }
+    const colors = { success:'#198754', info:'#0dcaf0', error:'#dc3545' };
+    const div = document.createElement('div');
+    div.style.cssText = `background:#1f1f1f;border-left:4px solid ${colors[type]||'#7c3aed'};color:#fff;padding:12px 18px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.5);font-size:.95rem;min-width:240px;animation:toastIn .25s ease;`;
+    div.innerHTML = msg;
+    container.appendChild(div);
+    setTimeout(() => { div.style.opacity='0'; div.style.transition='opacity .3s'; setTimeout(()=>div.remove(),320); }, 3500);
+}
+
+function _esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 </script>
 </body>
 </html>
