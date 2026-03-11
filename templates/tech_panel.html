@@ -541,6 +541,27 @@
                     <p class="text-muted small">Estadísticas y rendimiento</p>
                 </div>
             </div>
+            <div class="col-12 col-md-4" onclick="showSection('section-objetivos')">
+                <div class="menu-card">
+                    <i class="bi bi-bullseye fs-1 text-warning mb-2 d-block"></i>
+                    <h4 class="text-white">MIS OBJETIVOS</h4>
+                    <p class="text-muted small">Objetivos asignados y personales</p>
+                </div>
+            </div>
+            <div class="col-12 col-md-4" onclick="showSection('section-cal-personal')">
+                <div class="menu-card">
+                    <i class="bi bi-calendar-heart fs-1 mb-2 d-block" style="color:var(--nintec-cyan);"></i>
+                    <h4 class="text-white">CAL. PERSONAL</h4>
+                    <p class="text-muted small">Mis eventos y actividades</p>
+                </div>
+            </div>
+            <div class="col-12 col-md-4" onclick="showSection('section-documentacion')">
+                <div class="menu-card">
+                    <i class="bi bi-folder2-open fs-1 text-info mb-2 d-block"></i>
+                    <h4 class="text-white">DOCUMENTACIÓN</h4>
+                    <p class="text-muted small">Consultar documentos del sistema</p>
+                </div>
+            </div>
 
         </div>
 
@@ -701,6 +722,71 @@
 
         </div>
 
+
+
+        <!-- SECCIÓN OBJETIVOS (TÉCNICO) -->
+        <div id="section-objetivos" class="d-none" style="max-width: 1400px; margin: auto;">
+            <div class="d-flex justify-content-between mb-3 align-items-center flex-wrap gap-2">
+                <h3 class="text-warning fw-bold m-0 fs-4"><i class="bi bi-bullseye me-2"></i>Mis Objetivos</h3>
+                <button class="btn btn-outline-secondary btn-sm px-3" onclick="showSection('home-menu')">Atrás</button>
+            </div>
+
+            <!-- Filtros -->
+            <div class="d-flex gap-2 mb-3 flex-wrap">
+                <select id="techObjFilterStatus" class="form-select form-select-sm" style="max-width:150px; background:#000; color:#fff; border-color:#444;" onchange="renderTechObjetivos()">
+                    <option value="">Todos</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="en_progreso">En Progreso</option>
+                    <option value="completado">Completado</option>
+                </select>
+            </div>
+
+            <div class="row g-3" id="techObjetivosContainer">
+                <div class="col-12 text-center text-muted py-5">
+                    <div class="spinner-border spinner-border-sm me-2"></div>Cargando objetivos...
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN CALENDARIO PERSONAL (TÉCNICO) -->
+        <div id="section-cal-personal" class="d-none" style="max-width: 1400px; margin: auto;">
+            <div class="d-flex justify-content-between mb-3 align-items-center flex-wrap gap-2">
+                <h3 class="fw-bold m-0 fs-4" style="color:var(--nintec-cyan);"><i class="bi bi-calendar-heart me-2"></i>Mi Calendario Personal</h3>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm fw-bold" style="background:var(--nintec-purple); color:#fff;" data-bs-toggle="modal" data-bs-target="#modalAddPersonalEventTech">
+                        <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Evento
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm px-3" onclick="showSection('home-menu')">Atrás</button>
+                </div>
+            </div>
+            <p class="text-muted small mb-3"><i class="bi bi-info-circle me-1"></i>Este calendario es exclusivamente personal — visible solo para ti.</p>
+            <div id="techPersonalCalendar" style="background:#fff; color:#000; padding:10px; border-radius:10px; min-height:580px;"></div>
+        </div>
+
+        <!-- SECCIÓN DOCUMENTACIÓN (TÉCNICO) -->
+        <div id="section-documentacion" class="d-none" style="max-width: 1400px; margin: auto;">
+            <div class="d-flex justify-content-between mb-3 align-items-center flex-wrap gap-2">
+                <h3 class="text-info fw-bold m-0 fs-4"><i class="bi bi-folder2-open me-2"></i>Documentación</h3>
+                <button class="btn btn-outline-secondary btn-sm px-3" onclick="showSection('home-menu')">Atrás</button>
+            </div>
+
+            <div class="d-flex gap-2 mb-3 flex-wrap">
+                <select id="techDocCategory" class="form-select form-select-sm" style="max-width:180px; background:#000; color:#fff; border-color:#444;" onchange="loadTechDocumentos()">
+                    <option value="">Todas las categorías</option>
+                    <option value="general">General</option>
+                    <option value="tecnico">Técnico</option>
+                    <option value="empresa">Empresa</option>
+                    <option value="contrato">Contratos</option>
+                </select>
+                <input type="text" id="techDocSearch" class="form-control form-control-sm" style="max-width:250px; background:#000; color:#fff; border-color:#444;" placeholder="Buscar documento..." oninput="renderTechDocumentos()">
+            </div>
+
+            <div class="row g-3" id="techDocumentosContainer">
+                <div class="col-12 text-center text-muted py-5">
+                    <div class="spinner-border spinner-border-sm me-2"></div>Cargando documentos...
+                </div>
+            </div>
+        </div>
 
         <!-- SECCIÓN INCIDENCIAS -->
 
@@ -1348,6 +1434,18 @@
             if (id === 'section-analytics') {
                 setTimeout(() => loadAnalytics(), 100);
             }
+
+            if (id === 'section-objetivos') {
+                loadTechObjetivos();
+            }
+
+            if (id === 'section-cal-personal') {
+                initTechPersonalCalendar();
+            }
+
+            if (id === 'section-documentacion') {
+                loadTechDocumentos();
+            }
         }
 
         function initCalendar() {
@@ -1525,14 +1623,16 @@
                             }
 
                             if (client.has_support) {
+                                const schedMap = {lv:'L-V', ls:'L-S (Lunes-Sábado)', ld:'L-D (Lunes-Domingo)'};
+                                const schedLabel = schedMap[client.support_schedule] || client.support_schedule || '';
+                                const amountBadge = client.support_amount ? `<span class="ms-2 badge bg-dark border border-success text-light"><i class="bi bi-currency-euro me-1"></i>${parseFloat(client.support_amount).toFixed(0)}€/mes</span>` : '';
+                                const hoursBadge = client.support_free_hours ? `<span class="ms-2 badge bg-dark border border-info text-light"><i class="bi bi-clock-history me-1"></i>${client.support_free_hours}h gratis</span>` : '';
                                 html += `
                                     <div class="col-md-12 mt-2">
                                         <div class="alert alert-success py-2 px-3 mb-0 fw-bold" style="background-color: #28a745 !important; color: white !important; border: 2px solid #20c997;">
                                             <i class="bi bi-shield-check me-1"></i>
-                                            <strong>Soporte Activo:</strong>
-                                            ${client.support_monday_friday ? 'L-V ' : ''}
-                                            ${client.support_saturday ? 'Sáb ' : ''}
-                                            ${client.support_sunday ? 'Dom' : ''}
+                                            <strong>Soporte Activo:</strong> ${schedLabel}
+                                            ${amountBadge}${hoursBadge}
                                         </div>
                                     </div>
                                 `;
@@ -2895,9 +2995,9 @@
                                     <small>
                                         <i class="bi bi-shield-check me-1"></i>
                                         <strong>Soporte Activo:</strong>
-                                        ${clientInfo.support_monday_friday ? 'L-V ' : ''}
-                                        ${clientInfo.support_saturday ? 'Sáb ' : ''}
-                                        ${clientInfo.support_sunday ? 'Dom' : ''}
+                                        ${{ lv:'L-V', ls:'L-S', ld:'L-D' }[clientInfo.support_schedule] || clientInfo.support_schedule || ''}
+                                        ${clientInfo.support_amount ? ' · €'+parseFloat(clientInfo.support_amount).toFixed(0)+'/mes' : ''}
+                                        ${clientInfo.support_free_hours ? ' · '+clientInfo.support_free_hours+'h gratis' : ''}
                                     </small>
                                 </div>
                             ` : ''}
@@ -3669,7 +3769,352 @@
             openParteFromTask(taskId);
         }
 
+
+        // ═══════════════════════════════════════════════════════════════
+        // MIS OBJETIVOS (TÉCNICO)
+        // ═══════════════════════════════════════════════════════════════
+        var _techObjetivosData = [];
+
+        function loadTechObjetivos() {
+            fetch('/api/objetivos')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        _techObjetivosData = data.data;
+                        renderTechObjetivos();
+                    }
+                })
+                .catch(err => console.error('Error cargando objetivos:', err));
+        }
+
+        function renderTechObjetivos() {
+            const container = document.getElementById('techObjetivosContainer');
+            if (!container) return;
+            const filterStatus = (document.getElementById('techObjFilterStatus') || {}).value || '';
+            let filtered = _techObjetivosData;
+            if (filterStatus) filtered = filtered.filter(o => o.status === filterStatus);
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="bi bi-bullseye me-2 fs-2"></i><br>Sin objetivos asignados</div>';
+                return;
+            }
+
+            const statusColors  = { pendiente: 'warning', en_progreso: 'info', completado: 'success' };
+            const statusLabels  = { pendiente: 'Pendiente', en_progreso: 'En Progreso', completado: 'Completado' };
+            const priorityColors = { baja: 'secondary', normal: 'primary', alta: 'danger' };
+
+            container.innerHTML = filtered.map(o => {
+                const sc = statusColors[o.status] || 'secondary';
+                const sl = statusLabels[o.status] || o.status;
+                const pc = priorityColors[o.priority] || 'secondary';
+                const isOverdue = o.due_date && o.due_date < new Date().toISOString().split('T')[0] && o.status !== 'completado';
+                return `
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100" style="background:var(--nintec-card); border-left:3px solid var(--bs-${sc}); border-right:1px solid #2a2a3e; border-top:1px solid #2a2a3e; border-bottom:1px solid #2a2a3e;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="text-white fw-bold mb-0" style="line-height:1.3;">${o.title.replace(/</g,'&lt;')}</h6>
+                                <span class="badge bg-${sc} ms-2 flex-shrink-0">${sl}</span>
+                            </div>
+                            ${o.description ? `<p class="text-muted small mb-2">${o.description.replace(/</g,'&lt;')}</p>` : ''}
+                            <div class="d-flex flex-wrap gap-1">
+                                <span class="badge bg-${pc} bg-opacity-25 border border-${pc} text-light" style="font-size:0.7rem;">${o.priority}</span>
+                                ${o.due_date ? `<span class="badge ${isOverdue ? 'bg-danger' : 'bg-dark border border-secondary text-muted'}" style="font-size:0.7rem;"><i class="bi bi-calendar-event me-1"></i>${o.due_date}</span>` : ''}
+                            </div>
+                        </div>
+                        ${o.status !== 'completado' ? `
+                        <div class="card-footer bg-black border-0 pt-0">
+                            <button class="btn btn-sm btn-outline-success w-100" onclick="techMarkObjDone(${o.id})" style="font-size:0.8rem;">
+                                <i class="bi bi-check-circle-fill me-1"></i>Marcar como completado
+                            </button>
+                        </div>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function techMarkObjDone(id) {
+            fetch(`/api/objetivos/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ status: 'completado' })
+            })
+            .then(r => r.json())
+            .then(d => { if (d.success) loadTechObjetivos(); });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // CALENDARIO PERSONAL (TÉCNICO)
+        // ═══════════════════════════════════════════════════════════════
+        var _techPersonalCal = null;
+        var _techPEColor = '#7c3aed';
+        var _techCurrentPEId = null;
+
+        function initTechPersonalCalendar() {
+            if (_techPersonalCal) {
+                setTimeout(() => { try { _techPersonalCal.updateSize(); _techPersonalCal.refetchEvents(); } catch(e) {} }, 100);
+                return;
+            }
+            const el = document.getElementById('techPersonalCalendar');
+            if (!el) return;
+            _techPersonalCal = new FullCalendar.Calendar(el, {
+                initialView: 'dayGridMonth',
+                locale: 'es',
+                headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,listWeek' },
+                height: 'auto',
+                selectable: true,
+                events: function(fetchInfo, successCallback, failureCallback) {
+                    fetch('/api/personal_events')
+                        .then(r => r.json())
+                        .then(data => {
+                            successCallback(data.map(e => ({
+                                id: String(e.id),
+                                title: e.title,
+                                start: e.start_time ? `${e.start_date}T${e.start_time}` : e.start_date,
+                                end: e.end_date ? (e.end_time ? `${e.end_date}T${e.end_time}` : e.end_date) : null,
+                                allDay: e.all_day,
+                                backgroundColor: e.color || '#7c3aed',
+                                borderColor: e.color || '#7c3aed'
+                            })));
+                        })
+                        .catch(failureCallback);
+                },
+                dateClick: function(info) {
+                    document.getElementById('techPeStartDate').value = info.dateStr;
+                    document.getElementById('techPeEndDate').value = '';
+                    document.getElementById('techPeStartTime').value = '';
+                    document.getElementById('techPeEndTime').value = '';
+                    document.getElementById('techPeTitle').value = '';
+                    document.getElementById('techPeDescription').value = '';
+                    new bootstrap.Modal(document.getElementById('modalAddPersonalEventTech')).show();
+                },
+                eventClick: function(info) {
+                    _techCurrentPEId = info.event.id;
+                    document.getElementById('techPeViewTitle').textContent = info.event.title;
+                    const start = info.event.startStr || '';
+                    const end   = info.event.endStr   || '';
+                    document.getElementById('techPeViewHeader').style.borderColor = info.event.backgroundColor;
+                    document.getElementById('techPeViewBody').innerHTML =
+                        `<p class="mb-1"><i class="bi bi-calendar-event me-2 text-muted"></i>${start.replace('T',' ').substring(0,16)}</p>` +
+                        (end ? `<p class="mb-1"><i class="bi bi-calendar-check me-2 text-muted"></i>Fin: ${end.replace('T',' ').substring(0,16)}</p>` : '') +
+                        (info.event.extendedProps.description ? `<p class="text-muted small mt-2">${info.event.extendedProps.description}</p>` : '');
+                    new bootstrap.Modal(document.getElementById('modalViewPersonalEventTech')).show();
+                }
+            });
+            _techPersonalCal.render();
+        }
+
+        function saveTechPersonalEvent() {
+            const title = document.getElementById('techPeTitle').value.trim();
+            if (!title) { alert('El título es obligatorio'); return; }
+            fetch('/api/personal_events', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({
+                    title,
+                    description: document.getElementById('techPeDescription').value,
+                    start_date:  document.getElementById('techPeStartDate').value,
+                    start_time:  document.getElementById('techPeStartTime').value || null,
+                    end_date:    document.getElementById('techPeEndDate').value   || null,
+                    end_time:    document.getElementById('techPeEndTime').value   || null,
+                    color:       document.getElementById('techPeColor').value,
+                    all_day:     !document.getElementById('techPeStartTime').value
+                })
+            })
+            .then(r => r.json())
+            .then(d => {
+                if (d.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('modalAddPersonalEventTech')).hide();
+                    if (_techPersonalCal) _techPersonalCal.refetchEvents();
+                }
+            });
+        }
+
+        function deleteTechPersonalEvent() {
+            if (!_techCurrentPEId) return;
+            if (!confirm('¿Eliminar este evento?')) return;
+            fetch(`/api/personal_events/${_techCurrentPEId}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.success) {
+                        bootstrap.Modal.getInstance(document.getElementById('modalViewPersonalEventTech')).hide();
+                        if (_techPersonalCal) _techPersonalCal.refetchEvents();
+                    }
+                });
+        }
+
+        function selectTechPEColor(color, btn) {
+            _techPEColor = color;
+            document.getElementById('techPeColor').value = color;
+            document.querySelectorAll('.tech-pe-color-btn').forEach(b => b.style.border = '2px solid #444');
+            btn.style.border = '3px solid #fff';
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // DOCUMENTACIÓN (TÉCNICO)
+        // ═══════════════════════════════════════════════════════════════
+        var _techDocsData = [];
+
+        function loadTechDocumentos() {
+            const cat = (document.getElementById('techDocCategory') || {}).value || '';
+            let url = '/api/documentos';
+            if (cat) url += '?category=' + encodeURIComponent(cat);
+            fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        _techDocsData = data.data;
+                        renderTechDocumentos();
+                    }
+                })
+                .catch(err => console.error('Error cargando documentos:', err));
+        }
+
+        function renderTechDocumentos() {
+            const container = document.getElementById('techDocumentosContainer');
+            if (!container) return;
+            const search = (document.getElementById('techDocSearch') || {}).value || '';
+            let filtered = _techDocsData;
+            if (search) {
+                const q = search.toLowerCase();
+                filtered = filtered.filter(d => d.title.toLowerCase().includes(q) || (d.description || '').toLowerCase().includes(q));
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="bi bi-folder2-open me-2 fs-2"></i><br>Sin documentos</div>';
+                return;
+            }
+
+            const catColors = { general:'info', tecnico:'warning', empresa:'primary', contrato:'success' };
+            container.innerHTML = filtered.map(d => `
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100" style="background:var(--nintec-card); border:1px solid #1e1e3a; cursor:pointer;" onclick="techViewDocumento(${d.id})">
+                        <div class="card-body">
+                            <div class="d-flex align-items-start gap-2 mb-2">
+                                <i class="bi bi-file-earmark-text fs-4 text-info flex-shrink-0"></i>
+                                <div>
+                                    <h6 class="text-white fw-bold mb-0">${d.title.replace(/</g,'&lt;')}</h6>
+                                    ${d.description ? `<p class="text-muted small mb-0">${d.description.replace(/</g,'&lt;')}</p>` : ''}
+                                </div>
+                            </div>
+                            <div class="d-flex gap-1 mt-2">
+                                <span class="badge bg-${catColors[d.category]||'secondary'} bg-opacity-25 border text-light" style="font-size:0.7rem;">${d.category}</span>
+                                <span class="badge bg-dark border border-secondary text-muted" style="font-size:0.7rem;"><i class="bi bi-calendar me-1"></i>${(d.created_at||'').substring(0,10)}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>`).join('');
+        }
+
+        function techViewDocumento(id) {
+            fetch(`/api/documentos/${id}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.success) return;
+                    const d = data.doc;
+                    document.getElementById('techViewDocTitle').innerHTML = `<i class="bi bi-file-earmark-text me-2 text-info"></i>${d.title.replace(/</g,'&lt;')}`;
+                    document.getElementById('techViewDocMeta').innerHTML =
+                        `<span class="badge bg-info bg-opacity-25 border border-info text-light">${d.category}</span>` +
+                        `<span class="badge bg-dark border border-secondary text-muted"><i class="bi bi-person me-1"></i>${d.uploaded_by}</span>` +
+                        `<span class="badge bg-dark border border-secondary text-muted"><i class="bi bi-calendar me-1"></i>${(d.created_at||'').substring(0,10)}</span>`;
+                    document.getElementById('techViewDocContent').textContent = d.content || '(Sin contenido)';
+                    new bootstrap.Modal(document.getElementById('modalViewDocumentoTech')).show();
+                });
+        }
+
     </script>
+
+
+<!-- Modal: Añadir Evento Personal (Técnico) -->
+<div class="modal fade" id="modalAddPersonalEventTech" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title"><i class="bi bi-calendar-plus me-2" style="color:var(--nintec-cyan);"></i>Nuevo Evento Personal</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Título *</label>
+                    <input type="text" id="techPeTitle" class="form-control" placeholder="Ej: Reunión, Cita médica...">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Descripción</label>
+                    <textarea id="techPeDescription" class="form-control" rows="2"></textarea>
+                </div>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="form-label">Fecha inicio *</label>
+                        <input type="date" id="techPeStartDate" class="form-control">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Hora inicio</label>
+                        <input type="time" id="techPeStartTime" class="form-control">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Fecha fin</label>
+                        <input type="date" id="techPeEndDate" class="form-control">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Hora fin</label>
+                        <input type="time" id="techPeEndTime" class="form-control">
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <label class="form-label">Color</label>
+                    <div class="d-flex gap-2 flex-wrap mt-1">
+                        <button type="button" class="tech-pe-color-btn btn btn-sm" style="background:#7c3aed; width:32px; height:32px; border-radius:50%; border:3px solid #fff;" onclick="selectTechPEColor('#7c3aed', this)"></button>
+                        <button type="button" class="tech-pe-color-btn btn btn-sm" style="background:#00d4ff; width:32px; height:32px; border-radius:50%; border:2px solid #444;" onclick="selectTechPEColor('#00d4ff', this)"></button>
+                        <button type="button" class="tech-pe-color-btn btn btn-sm" style="background:#198754; width:32px; height:32px; border-radius:50%; border:2px solid #444;" onclick="selectTechPEColor('#198754', this)"></button>
+                        <button type="button" class="tech-pe-color-btn btn btn-sm" style="background:#ffc107; width:32px; height:32px; border-radius:50%; border:2px solid #444;" onclick="selectTechPEColor('#ffc107', this)"></button>
+                        <button type="button" class="tech-pe-color-btn btn btn-sm" style="background:#dc3545; width:32px; height:32px; border-radius:50%; border:2px solid #444;" onclick="selectTechPEColor('#dc3545', this)"></button>
+                    </div>
+                    <input type="hidden" id="techPeColor" value="#7c3aed">
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn fw-bold" style="background:var(--nintec-purple); color:#fff;" onclick="saveTechPersonalEvent()"><i class="bi bi-save-fill me-1"></i>Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Ver Evento Personal (Técnico) -->
+<div class="modal fade" id="modalViewPersonalEventTech" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-0" id="techPeViewHeader" style="border-bottom:3px solid var(--nintec-purple) !important;">
+                <h5 class="modal-title" id="techPeViewTitle"></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="techPeViewBody"></div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-danger btn-sm" onclick="deleteTechPersonalEvent()"><i class="bi bi-trash-fill me-1"></i>Eliminar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Ver Documento (Técnico) -->
+<div class="modal fade" id="modalViewDocumentoTech" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+        <div class="modal-content bg-dark text-white border-info">
+            <div class="modal-header border-info">
+                <h5 class="modal-title" id="techViewDocTitle"><i class="bi bi-file-earmark-text me-2 text-info"></i></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex gap-2 mb-3 flex-wrap" id="techViewDocMeta"></div>
+                <div id="techViewDocContent" class="p-3 rounded" style="background:#0a0a18; border:1px solid #333; min-height:200px; white-space:pre-wrap; font-family:'Courier New', monospace; font-size:0.9rem; line-height:1.6;"></div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 </body>
 

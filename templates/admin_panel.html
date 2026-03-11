@@ -154,6 +154,13 @@
             border: 1px solid #333;
         }
 
+        /* Objetivos en calendario global */
+        .objetivo-event {
+            border: 2px dashed #fff !important;
+            border-radius: 6px !important;
+            font-weight: bold !important;
+        }
+        .objetivo-event .fc-event-title::before { content: ""; }
         /* Badge de soporte mejorado para mejor visibilidad */
         .support-badge {
             background-color: #28a745 !important;
@@ -574,6 +581,8 @@
                     data-bs-target="#pagos" id="tabPagosBtn" onclick="loadPaymentsList()">PAGOS</button></li>
             <li class="nav-item"><button class="nav-link w-100" data-bs-toggle="tab"
                     data-bs-target="#documentacion" id="tabDocumentacionBtn" onclick="loadDocumentos()">DOCUMENTACIÓN</button></li>
+            <li class="nav-item"><button class="nav-link w-100" data-bs-toggle="tab"
+                    data-bs-target="#cal-personal-admin" id="tabCalPersonalAdminBtn" onclick="initPersonalCalendar()">MI CALENDARIO</button></li>
 
         </ul>
 
@@ -2668,6 +2677,24 @@
         }
 
         function handleEventClick(info) {
+            // Handle objetivo events differently
+            if (info.event && info.event.extendedProps && info.event.extendedProps.is_objetivo) {
+                const obj = info.event.extendedProps;
+                const statusLabels = {pendiente:'Pendiente', en_progreso:'En Progreso', completado:'Completado'};
+                const priorityLabels = {alta:'Alta 🔴', normal:'Normal 🟡', baja:'Baja 🟢'};
+                const msg = `<b>🎯 ${_esc(info.event.title.replace('🎯 ',''))}</b><br>
+                    <span class="badge bg-secondary mt-1 me-1">${statusLabels[obj.status]||obj.status}</span>
+                    <span class="badge bg-dark border border-secondary mt-1">${priorityLabels[obj.priority]||obj.priority}</span><br>
+                    ${obj.description ? '<p class="text-muted mt-2 small">'+_esc(obj.description)+'</p>' : ''}
+                    <small class="text-muted"><i class="bi bi-person me-1"></i>${_esc(obj.username)}</small>`;
+                // Show simple toast-like alert
+                const div = document.createElement('div');
+                div.style.cssText = 'position:fixed;top:70px;right:20px;z-index:9999;background:#1f1f1f;border-left:4px solid #f59e0b;color:#fff;padding:14px 18px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:320px;';
+                div.innerHTML = msg;
+                document.body.appendChild(div);
+                setTimeout(()=>{ div.style.opacity='0'; div.style.transition='opacity .3s'; setTimeout(()=>div.remove(),320); }, 4000);
+                return;
+            }
             const props = info.event.extendedProps || {};
             // ── Desviar asistencias remotas al modal rápido ──────────────
             if (props.is_remote) {
@@ -6819,7 +6846,7 @@ function renderSalaryPaymentsTable() {
 function populateSalPayTechSelect() {
     const sel = document.getElementById('salPayTechSelect');
     if (!sel) return;
-    fetch('/api/salarios')
+    fetch('/api/techs')
         .then(r => r.json())
         .then(data => {
             if (data.success) {
@@ -6931,7 +6958,7 @@ function populateObjUserFilter() {
 function populateObjUserSelect() {
     const sel = document.getElementById('objUserId');
     if (!sel) return;
-    fetch('/api/salarios')
+    fetch('/api/techs')
         .then(r => r.json())
         .then(data => {
             if (data.success) {
@@ -7293,8 +7320,60 @@ function openEditDocumento(doc) {
     }, 300);
 }
 
+// Preview file content when selected
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('docFile');
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            const preview = document.getElementById('docFilePreview');
+            const file = this.files[0];
+            if (!file) { preview.classList.add('d-none'); return; }
+            // Auto-fill title from filename
+            const titleEl = document.getElementById('docTitle');
+            if (titleEl && !titleEl.value) {
+                titleEl.value = file.name.replace(/\.[^.]+$/, '');
+            }
+            // Preview text files
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.textContent = e.target.result.substring(0, 1000) + (e.target.result.length > 1000 ? '
+...' : '');
+                preview.classList.remove('d-none');
+            };
+            reader.readAsText(file);
+        });
+    }
+});
+
 function saveDocumento() {
+    const isFileTab = document.getElementById('docTabArchivoBtn')?.classList.contains('active');
+    const fileEl = document.getElementById('docFile');
+    const hasFile = isFileTab && fileEl && fileEl.files.length > 0;
     const title = document.getElementById('docTitle').value.trim();
+
+    if (hasFile) {
+        // File upload via FormData
+        const file = fileEl.files[0];
+        const finalTitle = title || file.name.replace(/\.[^.]+$/, '');
+        const formData = new FormData();
+        formData.append('title', finalTitle);
+        formData.append('description', document.getElementById('docDescription').value);
+        formData.append('category', document.getElementById('docCategory').value);
+        formData.append('file', file);
+        fetch('/api/documentos', { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(d => {
+                if (d.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('modalAddDocumento')).hide();
+                    showAdminToast('<i class="bi bi-check-circle-fill me-2"></i>Documento importado', 'success');
+                    loadDocumentos();
+                    document.getElementById('docFile').value = '';
+                    document.getElementById('docFilePreview').classList.add('d-none');
+                } else { showAdminToast(d.msg || 'Error', 'error'); }
+            });
+        return;
+    }
+
     if (!title) { showAdminToast('El título es obligatorio', 'error'); return; }
     fetch('/api/documentos', {
         method: 'POST',
@@ -8033,6 +8112,24 @@ function showAdminToast(msg, type) {
 }
 </script>
 
+            <!-- ======================================================= -->
+            <!-- PESTAÑA MI CALENDARIO PERSONAL (ADMIN)                  -->
+            <!-- ======================================================= -->
+            <div class="tab-pane fade" id="cal-personal-admin">
+                <div class="d-flex justify-content-between mb-3 align-items-center flex-wrap gap-2">
+                    <h4 class="fw-bold text-white fs-5 m-0">
+                        <i class="bi bi-calendar-heart me-2" style="color:var(--nintec-cyan);"></i>Mi Calendario Personal
+                    </h4>
+                    <button class="btn btn-sm fw-bold" style="background:var(--nintec-purple); color:#fff;" data-bs-toggle="modal" data-bs-target="#modalAddPersonalEvent">
+                        <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Evento
+                    </button>
+                </div>
+                <p class="text-muted small mb-3"><i class="bi bi-info-circle me-1"></i>Este calendario es exclusivamente personal — visible solo para ti.</p>
+                <div id="personalCalendarAdmin" style="background:#fff; color:#000; padding:10px; border-radius:10px; min-height:600px;"></div>
+            </div>
+
+        </div><!-- /tab-content -->
+
 <!-- ============================================================ -->
 <!-- Modal: Registrar Pago de Salario                             -->
 <!-- ============================================================ -->
@@ -8299,8 +8396,17 @@ function showAdminToast(msg, type) {
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
+                <!-- Tabs: texto vs archivo -->
+                <ul class="nav nav-tabs mb-3" id="docInputTabs">
+                    <li class="nav-item">
+                        <button class="nav-link active text-white" data-bs-toggle="tab" data-bs-target="#docTabTexto" id="docTabTextoBtn"><i class="bi bi-pencil-square me-1"></i>Escribir texto</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link text-white" data-bs-toggle="tab" data-bs-target="#docTabArchivo" id="docTabArchivoBtn"><i class="bi bi-upload me-1"></i>Importar archivo</button>
+                    </li>
+                </ul>
                 <div class="mb-3">
-                    <label class="form-label">Título *</label>
+                    <label class="form-label">Título <span id="docTitleOptional" class="text-muted small">(opcional si subes archivo)</span></label>
                     <input type="text" id="docTitle" class="form-control bg-black text-white border-secondary" placeholder="Nombre del documento...">
                 </div>
                 <div class="row g-3 mb-3">
@@ -8318,10 +8424,22 @@ function showAdminToast(msg, type) {
                         <input type="text" id="docDescription" class="form-control bg-black text-white border-secondary" placeholder="Breve descripción...">
                     </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Contenido / Texto del documento</label>
-                    <textarea id="docContent" class="form-control bg-black text-white border-secondary" rows="8" placeholder="Escribe aquí el contenido del documento, instrucciones, procedimientos, información..."></textarea>
-                    <small class="text-muted">Puedes escribir texto enriquecido con Markdown básico.</small>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="docTabTexto">
+                        <div class="mb-3">
+                            <label class="form-label">Contenido</label>
+                            <textarea id="docContent" class="form-control bg-black text-white border-secondary" rows="8" placeholder="Escribe aquí el contenido..."></textarea>
+                            <small class="text-muted">Puedes usar Markdown básico.</small>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="docTabArchivo">
+                        <div class="mb-3">
+                            <label class="form-label">Archivo a importar</label>
+                            <input type="file" id="docFile" class="form-control bg-black text-white border-secondary" accept=".txt,.md,.csv,.json,.xml,.html,.pdf,.doc,.docx">
+                            <small class="text-muted">Formatos soportados: .txt, .md, .csv, .json, .xml, .html y otros archivos de texto. El título se tomará del nombre del archivo si no se especifica.</small>
+                        </div>
+                        <div id="docFilePreview" class="p-3 rounded d-none" style="background:#0a0a18; border:1px solid #333; max-height:200px; overflow-y:auto; font-family:monospace; font-size:0.82rem; white-space:pre-wrap;"></div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer border-secondary">
