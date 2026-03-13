@@ -2995,7 +2995,7 @@
                                     <small>
                                         <i class="bi bi-shield-check me-1"></i>
                                         <strong>Soporte Activo:</strong>
-                                        ${{ lv:'L-V', ls:'L-S', ld:'L-D' }[clientInfo.support_schedule] || clientInfo.support_schedule || ''}
+                                        ${clientInfo.support_schedule === 'lv' ? 'L-V' : clientInfo.support_schedule === 'ls' ? 'L-S' : clientInfo.support_schedule === 'ld' ? 'L-D' : clientInfo.support_schedule || ''}
                                         ${clientInfo.support_amount ? ' · €'+parseFloat(clientInfo.support_amount).toFixed(0)+'/mes' : ''}
                                         ${clientInfo.support_free_hours ? ' · '+clientInfo.support_free_hours+'h gratis' : ''}
                                     </small>

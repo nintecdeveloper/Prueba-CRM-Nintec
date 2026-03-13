@@ -582,7 +582,7 @@
             <li class="nav-item"><button class="nav-link w-100" data-bs-toggle="tab"
                     data-bs-target="#documentacion" id="tabDocumentacionBtn" onclick="loadDocumentos()">DOCUMENTACIÓN</button></li>
             <li class="nav-item"><button class="nav-link w-100" data-bs-toggle="tab"
-                    data-bs-target="#cal-personal-admin" id="tabCalPersonalAdminBtn" onclick="initPersonalCalendar()">MI CALENDARIO</button></li>
+                    data-bs-target="#cal-personal-admin" id="tabCalPersonalAdminBtn">MI CALENDARIO</button></li>
 
         </ul>
 
@@ -2892,21 +2892,13 @@
             }
         });
 
-        // Personal calendar: init/resize after tab CSS transition completes
+        // Personal calendar: shown.bs.tab fires AFTER Bootstrap's CSS transition
+        // completes — the tab-pane is fully visible and has correct dimensions.
+        // initPersonalCalendar() handles both first creation and subsequent
+        // resize/refresh internally, so a single call covers both cases.
         document.addEventListener('shown.bs.tab', function(e) {
             if (e.target && e.target.getAttribute('data-bs-target') === '#cal-personal-admin') {
-                if (_personalCalendarAdmin) {
-                    // Calendar already created — just resize and refresh
-                    setTimeout(function() {
-                        try {
-                            _personalCalendarAdmin.updateSize();
-                            _personalCalendarAdmin.refetchEvents();
-                        } catch(err) {}
-                    }, 50);
-                } else {
-                    // First time — create it now that the tab is visible
-                    initPersonalCalendar();
-                }
+                initPersonalCalendar();
             }
         });
 
@@ -2990,6 +2982,8 @@
             }
 
             calendarGlobalInstance.refetchEvents();
+            // También refrescar la lista de objetivos del sidebar
+            loadObjetivos();
 
             // Mostrar feedback visual
             const btn = event.target.closest('button');
@@ -7010,14 +7004,34 @@ function populateObjUserFilter() {
 function populateObjUserSelect() {
     const sel = document.getElementById('objUserId');
     if (!sel) return;
-    fetch('/api/techs')
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
+    // Usar /api/salarios como fuente primaria (devuelve lista completa de técnicos
+    // sin depender del rol actual). Fallback a /api/techs si falla.
+    fetch('/api/salarios')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success && data.techs && data.techs.length) {
                 sel.innerHTML = '<option value="">Global (todo el equipo)</option>' +
-                    data.techs.map(t => `<option value="${t.id}">${_esc(t.username)}</option>`).join('');
+                    data.techs.map(function(t) {
+                        return '<option value="' + t.id + '">' + _esc(t.username) + '</option>';
+                    }).join('');
+            } else {
+                throw new Error('No techs in salarios response');
             }
-        }).catch(() => {});
+        })
+        .catch(function() {
+            // Fallback: /api/techs
+            fetch('/api/techs')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success && data.techs) {
+                        sel.innerHTML = '<option value="">Global (todo el equipo)</option>' +
+                            data.techs.map(function(t) {
+                                return '<option value="' + t.id + '">' + _esc(t.username) + '</option>';
+                            }).join('');
+                    }
+                })
+                .catch(function() {});
+        });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -7093,7 +7107,15 @@ function quickUpdateObjetivoStatus(id, currentStatus) {
         body: JSON.stringify({status: newStatus})
     })
     .then(r => r.json())
-    .then(d => { if (d.success) { loadObjetivos(); } });
+    .then(d => {
+        if (d.success) {
+            loadObjetivos();
+            // El color del evento en el calendario cambia con el estado
+            if (typeof calendarGlobalInstance !== 'undefined' && calendarGlobalInstance) {
+                calendarGlobalInstance.refetchEvents();
+            }
+        }
+    });
 }
 
 function openEditObjetivo(obj) {
@@ -7129,6 +7151,10 @@ function saveObjetivo() {
             bootstrap.Modal.getInstance(document.getElementById('modalAddObjetivo')).hide();
             showAdminToast('<i class="bi bi-check-circle-fill me-2"></i>Objetivo creado', 'success');
             loadObjetivos();
+            // Refrescar el calendario global para que aparezca el nuevo objetivo
+            if (typeof calendarGlobalInstance !== 'undefined' && calendarGlobalInstance) {
+                calendarGlobalInstance.refetchEvents();
+            }
         } else { showAdminToast(d.msg || 'Error', 'error'); }
     });
 }
@@ -7154,6 +7180,10 @@ function updateObjetivo() {
             bootstrap.Modal.getInstance(document.getElementById('modalEditObjetivo')).hide();
             showAdminToast('<i class="bi bi-check-circle-fill me-2"></i>Objetivo actualizado', 'success');
             loadObjetivos();
+            // Refrescar el calendario global para que refleje el cambio
+            if (typeof calendarGlobalInstance !== 'undefined' && calendarGlobalInstance) {
+                calendarGlobalInstance.refetchEvents();
+            }
         }
     });
 }
@@ -7166,6 +7196,10 @@ function deleteObjetivo(id) {
             if (d.success) {
                 showAdminToast('<i class="bi bi-trash-fill me-2"></i>Objetivo eliminado', 'info');
                 loadObjetivos();
+                // Refrescar el calendario global para eliminar el evento del objetivo
+                if (typeof calendarGlobalInstance !== 'undefined' && calendarGlobalInstance) {
+                    calendarGlobalInstance.refetchEvents();
+                }
             }
         });
 }
@@ -7185,53 +7219,87 @@ function selectPEColor(color, btn) {
 }
 
 function initPersonalCalendar() {
+    // Si el calendario ya existe, solo redimensionar y recargar eventos.
+    // Esta función se llama desde shown.bs.tab (elemento garantizadamente visible)
+    // por lo que no necesita setTimeout interno.
     if (_personalCalendarAdmin) {
-        setTimeout(() => { try { _personalCalendarAdmin.updateSize(); _personalCalendarAdmin.refetchEvents(); } catch(e) {} }, 50);
+        try {
+            _personalCalendarAdmin.updateSize();
+            _personalCalendarAdmin.refetchEvents();
+        } catch(e) {}
         return;
     }
     const el = document.getElementById('personalCalendarAdmin');
     if (!el) return;
-    // Small delay to ensure the tab pane is fully visible before rendering
-    setTimeout(() => {
-        if (_personalCalendarAdmin) { _personalCalendarAdmin.updateSize(); return; }
-        _personalCalendarAdmin = new FullCalendar.Calendar(el, {
-            initialView: 'dayGridMonth',
-            locale: 'es',
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,listMonth'
-            },
-            selectable: true,
-            select: function(info) {
-                document.getElementById('peStartDate').value = info.startStr.split('T')[0];
-                document.getElementById('peEndDate').value = info.startStr.split('T')[0];
-                new bootstrap.Modal(document.getElementById('modalAddPersonalEvent')).show();
-            },
-            eventClick: function(info) {
-                _currentPEId = parseInt(info.event.id);
-                viewPersonalEvent(info.event);
-            },
-            events: function(info, successCb, failureCb) {
-                fetch('/api/personal_events')
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.success) {
-                            successCb(data.data.map(e => ({
-                                id: e.id,
+
+    _personalCalendarAdmin = new FullCalendar.Calendar(el, {
+        initialView: 'dayGridMonth',
+        locale: 'es',
+        height: 'auto',
+        expandRows: true,
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,listMonth'
+        },
+        buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', list: 'Lista' },
+        selectable: true,
+        selectMirror: true,
+        nowIndicator: true,
+        // Clic en un día vacío → abrir modal con fecha pre-rellenada
+        dateClick: function(info) {
+            document.getElementById('peStartDate').value = info.dateStr;
+            document.getElementById('peEndDate').value   = info.dateStr;
+            var t = document.getElementById('peTitle');        if (t) t.value = '';
+            var d = document.getElementById('peDescription'); if (d) d.value = '';
+            var st = document.getElementById('peStartTime');  if (st) st.value = '';
+            var et = document.getElementById('peEndTime');    if (et) et.value = '';
+            var c = document.getElementById('peColor');       if (c) c.value = _selectedPEColor;
+            new bootstrap.Modal(document.getElementById('modalAddPersonalEvent')).show();
+        },
+        // Arrastrar para seleccionar rango → abrir modal con rango
+        select: function(info) {
+            document.getElementById('peStartDate').value = info.startStr.split('T')[0];
+            document.getElementById('peEndDate').value   = info.endStr
+                ? info.endStr.split('T')[0] : info.startStr.split('T')[0];
+            new bootstrap.Modal(document.getElementById('modalAddPersonalEvent')).show();
+        },
+        // Clic en evento → ver detalles
+        eventClick: function(info) {
+            _currentPEId = parseInt(info.event.id);
+            viewPersonalEvent(info.event);
+        },
+        // Cargar eventos desde la API
+        events: function(info, successCb, failureCb) {
+            fetch('/api/personal_events')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        successCb(data.data.map(function(e) {
+                            return {
+                                id:    e.id,
                                 title: e.title,
-                                start: e.all_day ? e.start_date : (e.start_time ? e.start_date + 'T' + e.start_time : e.start_date),
-                                end: e.end_date ? (e.end_time ? e.end_date + 'T' + e.end_time : e.end_date) : null,
-                                color: e.color,
-                                allDay: e.all_day,
-                                extendedProps: { description: e.description }
-                            })));
-                        } else { failureCb(); }
-                    }).catch(failureCb);
-            }
-        });
-        _personalCalendarAdmin.render();
-    }, 150);
+                                start: e.all_day
+                                    ? e.start_date
+                                    : (e.start_time
+                                        ? e.start_date + 'T' + e.start_time
+                                        : e.start_date),
+                                end: e.end_date
+                                    ? (e.end_time
+                                        ? e.end_date + 'T' + e.end_time
+                                        : e.end_date)
+                                    : null,
+                                color:   e.color || '#7c3aed',
+                                allDay:  e.all_day,
+                                extendedProps: { description: e.description || '' }
+                            };
+                        }));
+                    } else { failureCb(); }
+                })
+                .catch(failureCb);
+        }
+    });
+    _personalCalendarAdmin.render();
 }
 
 function savePersonalEvent() {
