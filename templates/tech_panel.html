@@ -1417,7 +1417,7 @@
 
             // ✅ Inicializar firma + cargar draft cuando se muestra el parte
             if (id === 'section-parte') {
-                setTimeout(() => { try { initSignaturePad(); } catch(e) {} }, 100);
+                setTimeout(() => { try { initSignaturePad(); mainSignaturePad.init(); } catch(e) {} }, 100);
                 // Solo cargar draft si no hay datos pre-cargados desde una cita
                 if (!_partePreloaded) {
                     setTimeout(() => loadDraft(), 200);
@@ -2410,10 +2410,22 @@
             });
         }
 
-        // Cargar analíticas cuando se muestra la sección
         // ==================== FIRMA DIGITAL ====================
 
-        // Ajustar tamaño del canvas
+        var mainSignaturePad = {
+            canvas: null,
+            ctx: null,
+            isDrawing: false,
+            lastX: 0,
+            lastY: 0,
+
+            init: function () {
+                const canvas = document.getElementById('signaturePad');
+                if (!canvas) return;
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+
+                // Ajustar tamaño del canvas
                 const container = this.canvas.parentElement;
                 this.canvas.width = container.clientWidth - 20;
                 this.canvas.height = 200;
