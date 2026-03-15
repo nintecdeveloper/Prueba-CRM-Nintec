@@ -4767,6 +4767,15 @@ def api_update_objetivo(oid):
             o.due_date = date.fromisoformat(body['due_date']) if body['due_date'] else None
         except:
             pass
+    if 'user_id' in body and current_user.role == 'admin':
+        uid = body['user_id']
+        if uid is None or uid == '' or uid == 'null':
+            o.user_id = None
+        else:
+            try:
+                o.user_id = int(uid)
+            except (ValueError, TypeError):
+                o.user_id = None
     o.updated_at = datetime.now()
     db.session.commit()
     return jsonify({'success': True})
