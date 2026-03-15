@@ -555,13 +555,7 @@
                     <p class="text-muted small">Mis eventos y actividades</p>
                 </div>
             </div>
-            <div class="col-12 col-md-4" onclick="showSection('section-documentacion')">
-                <div class="menu-card">
-                    <i class="bi bi-folder2-open fs-1 text-info mb-2 d-block"></i>
-                    <h4 class="text-white">DOCUMENTACIÓN</h4>
-                    <p class="text-muted small">Consultar documentos del sistema</p>
-                </div>
-            </div>
+
 
         </div>
 
@@ -574,35 +568,12 @@
                         data-bs-target="#modalNewAppointmentTech">
                         <i class="bi bi-calendar-plus-fill me-1"></i> Nueva Cita
                     </button>
-                    <button class="btn btn-info btn-sm fw-bold" data-bs-toggle="modal"
-                        data-bs-target="#modalNewRemoteTech"
-                        title="Agendar asistencia remota">
-                        <i class="bi bi-telephone-fill me-1"></i> Asistencia Remota
-                    </button>
+
                     <button class="btn btn-outline-secondary btn-sm px-3"
                         onclick="showSection('home-menu')">Atrás</button>
                 </div>
             </div>
 
-            <!-- FILTROS POR TIPO DE SERVICIO -->
-            <div class="filter-group mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <small class="text-muted fw-bold">FILTRAR POR TIPO DE SERVICIO</small>
-                    <button class="btn btn-outline-light btn-sm" onclick="checkAllTechFilters()">
-                        <i class="bi bi-check-all me-1"></i> Todos
-                    </button>
-                </div>
-                <div class="btn-group-sm d-flex flex-wrap gap-2" role="group">
-                    {% for svc in all_service_types %}
-                    <input type="checkbox" class="btn-check tech-filter-cb" id="tech-filter-{{ svc.id }}"
-                        value="{{ svc.name }}" checked onchange="updateTechFilters()">
-                    <label class="btn btn-outline-custom flex-grow-1" for="tech-filter-{{ svc.id }}"
-                        data-color="{{ svc.color }}">
-                        {{ svc.name }}
-                    </label>
-                    {% endfor %}
-                </div>
-            </div>
 
             <!-- Botón para mostrar/ocultar lista de tareas -->
             <div class="d-flex justify-content-end mb-2">
@@ -761,31 +732,6 @@
             </div>
             <p class="text-muted small mb-3"><i class="bi bi-info-circle me-1"></i>Este calendario es exclusivamente personal — visible solo para ti.</p>
             <div id="techPersonalCalendar" style="background:#fff; color:#000; padding:10px; border-radius:10px; min-height:580px;"></div>
-        </div>
-
-        <!-- SECCIÓN DOCUMENTACIÓN (TÉCNICO) -->
-        <div id="section-documentacion" class="d-none" style="max-width: 1400px; margin: auto;">
-            <div class="d-flex justify-content-between mb-3 align-items-center flex-wrap gap-2">
-                <h3 class="text-info fw-bold m-0 fs-4"><i class="bi bi-folder2-open me-2"></i>Documentación</h3>
-                <button class="btn btn-outline-secondary btn-sm px-3" onclick="showSection('home-menu')">Atrás</button>
-            </div>
-
-            <div class="d-flex gap-2 mb-3 flex-wrap">
-                <select id="techDocCategory" class="form-select form-select-sm" style="max-width:180px; background:#000; color:#fff; border-color:#444;" onchange="loadTechDocumentos()">
-                    <option value="">Todas las categorías</option>
-                    <option value="general">General</option>
-                    <option value="tecnico">Técnico</option>
-                    <option value="empresa">Empresa</option>
-                    <option value="contrato">Contratos</option>
-                </select>
-                <input type="text" id="techDocSearch" class="form-control form-control-sm" style="max-width:250px; background:#000; color:#fff; border-color:#444;" placeholder="Buscar documento..." oninput="renderTechDocumentos()">
-            </div>
-
-            <div class="row g-3" id="techDocumentosContainer">
-                <div class="col-12 text-center text-muted py-5">
-                    <div class="spinner-border spinner-border-sm me-2"></div>Cargando documentos...
-                </div>
-            </div>
         </div>
 
         <!-- SECCIÓN INCIDENCIAS -->
@@ -1130,196 +1076,6 @@
     </div>
 
 
-    <!-- Modal: Asistencia Remota (Técnico) -->
-    <div class="modal fade" id="modalTechRemoteAssistance" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-            <div class="modal-content bg-dark text-white border-info">
-                <div class="modal-header border-info bg-info bg-opacity-10 py-2">
-                    <h5 class="modal-title">
-                        <i class="bi bi-wifi me-2 text-info"></i>
-                        Asistencia Remota — <span id="techRmtClientTitle">Cliente</span>
-                        <span class="badge bg-info text-dark ms-2" style="font-size:0.7rem;">📡 REMOTO</span>
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="techRmtTaskId">
-                    <input type="hidden" id="techRmtClientId">
-
-                    <!-- Estado y fecha -->
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span id="techRmtStatusBadge" class="badge bg-warning text-dark" style="font-size:0.9rem; padding:6px 12px;">Pendiente</span>
-                        <small class="text-info fw-bold" id="techRmtDateLabel"></small>
-                    </div>
-
-                    <!-- Ficha cliente con badge de soporte -->
-                    <div id="techRmtClientCard" class="card bg-secondary bg-opacity-10 border-secondary mb-3 p-2" style="display:none;">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div>
-                                <span class="text-white small fw-bold" id="techRmtClientCardName">—</span>
-                                <div class="text-muted" style="font-size:0.75rem;">
-                                    <i class="bi bi-telephone me-1"></i><span id="techRmtClientCardPhone">—</span>
-                                    &nbsp;·&nbsp;
-                                    <i class="bi bi-envelope me-1"></i><span id="techRmtClientCardEmail">—</span>
-                                </div>
-                            </div>
-                            <div>
-                                <span class="badge bg-success" id="techRmtSupportBadge" style="display:none;"><i class="bi bi-shield-check me-1"></i>Con Soporte</span>
-                                <span class="badge bg-danger" id="techRmtNoSupportBadge" style="display:none;"><i class="bi bi-shield-x me-1"></i>Sin Soporte</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Horas de soporte mensual -->
-                    <div id="techRmtHoursSection" class="card bg-secondary bg-opacity-10 border-secondary mb-3 p-2" style="display:none;">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <small class="text-muted"><i class="bi bi-clock-history me-1"></i>Horas de soporte este mes</small>
-                            <small class="fw-bold text-info" id="techRmtHoursLabel">— / 5h</small>
-                        </div>
-                        <div class="progress" style="height:6px;">
-                            <div id="techRmtHoursBar" class="progress-bar" role="progressbar" style="width:0%;"></div>
-                        </div>
-                        <small id="techRmtHoursDetail" class="text-muted mt-1 d-block" style="font-size:0.7rem;"></small>
-                    </div>
-
-                    <!-- Registro de tiempo -->
-                    <div class="p-2 rounded mb-3" style="background:#0d1117; border:1px solid #30363d;">
-                        <small class="text-info fw-bold d-block mb-2"><i class="bi bi-clock me-1"></i>Registro de tiempo</small>
-                        <div class="row g-2 align-items-end">
-                            <div class="col-5">
-                                <label class="form-label small mb-1"><i class="bi bi-play-fill text-success me-1"></i>Hora inicio</label>
-                                <input type="time" id="techRmtStartTime" class="form-control form-control-sm bg-dark text-white border-secondary" oninput="updateTechRmtDuration()">
-                            </div>
-                            <div class="col-5">
-                                <label class="form-label small mb-1"><i class="bi bi-stop-fill text-danger me-1"></i>Hora fin</label>
-                                <input type="time" id="techRmtEndTime" class="form-control form-control-sm bg-dark text-white border-secondary" oninput="updateTechRmtDuration()">
-                            </div>
-                            <div class="col-2 text-center">
-                                <div id="techRmtDuration" class="fw-bold text-info" style="font-size:1rem;">—</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Notas -->
-                    <div class="mb-2">
-                        <label class="form-label small mb-1"><i class="bi bi-sticky me-1"></i>Notas / Descripción</label>
-                        <textarea id="techRmtDescription" class="form-control bg-dark text-white border-secondary" rows="4"
-                            placeholder="Describe el trabajo realizado, incidencias, solución..."></textarea>
-                    </div>
-
-                    <!-- Aviso límite -->
-                    <div id="techRmtWarning" class="alert alert-warning py-1 px-2 small mb-0" style="display:none;">
-                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                        <span id="techRmtWarningText">Límite mensual superado.</span>
-                    </div>
-                </div>
-                <div class="modal-footer border-secondary py-2 d-flex justify-content-between">
-                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="techRmtDelete()">
-                        <i class="bi bi-trash me-1"></i>Eliminar
-                    </button>
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-outline-info btn-sm" onclick="techRmtSave(false)">
-                            <i class="bi bi-floppy me-1"></i>Guardar
-                        </button>
-                        <button type="button" class="btn btn-success btn-sm" onclick="techRmtSave(true)">
-                            <i class="bi bi-check-lg me-1"></i>Completar Asistencia
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Nueva Asistencia Remota (técnico) -->
-    <div class="modal fade" id="modalNewRemoteTech" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content bg-dark text-white">
-                <div class="modal-header border-secondary bg-info bg-opacity-10">
-                    <h5 class="modal-title"><i class="bi bi-wifi me-2 text-info"></i>Nueva Asistencia Remota</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-info py-2 small mb-3">
-                        <i class="bi bi-info-circle me-1"></i>
-                        Las asistencias remotas acumulan horas de soporte mensual (límite: 5h/mes). Se registrarán automáticamente a tu nombre.
-                    </div>
-
-                    <!-- Búsqueda de cliente -->
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small mb-1">Buscar Cliente <span class="text-danger">*</span></label>
-                        <div class="position-relative">
-                            <input type="text" id="techNewRmtClientSearch"
-                                class="form-control form-control-sm bg-dark text-white border-secondary"
-                                placeholder="Escriba nombre del cliente..." autocomplete="off">
-                            <div id="techNewRmtClientsList" class="suggestions-list"></div>
-                        </div>
-                    </div>
-
-                    <!-- Ficha del cliente -->
-                    <div id="techNewRmtClientCard" style="display:none;" class="card bg-secondary bg-opacity-10 border-info mb-3">
-                        <div class="card-body py-2 px-3">
-                            <div class="d-flex align-items-center justify-content-between mb-1">
-                                <h6 class="card-title text-info mb-0" id="techNewRmtClientName">-</h6>
-                                <div>
-                                    <span class="badge bg-success" id="techNewRmtSupportBadge" style="display:none;"><i class="bi bi-shield-check me-1"></i>Con Soporte</span>
-                                    <span class="badge bg-danger" id="techNewRmtNoSupportBadge" style="display:none;"><i class="bi bi-shield-x me-1"></i>Sin Soporte</span>
-                                </div>
-                            </div>
-                            <div class="small text-muted">
-                                <i class="bi bi-telephone me-1"></i><span id="techNewRmtClientPhone">-</span>
-                                &nbsp;·&nbsp;
-                                <i class="bi bi-envelope me-1"></i><span id="techNewRmtClientEmail">-</span>
-                            </div>
-                            <!-- Barra horas mensuales -->
-                            <div id="techNewRmtHoursSection" style="display:none;" class="mt-2">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <small class="text-muted">Soporte remoto este mes</small>
-                                    <small id="techNewRmtHoursLabel" class="fw-bold">0h / 5h</small>
-                                </div>
-                                <div class="progress" style="height:6px;">
-                                    <div id="techNewRmtHoursBar" class="progress-bar" role="progressbar" style="width:0%; background:#06b6d4;"></div>
-                                </div>
-                                <div id="techNewRmtHoursWarning" style="display:none;" class="alert alert-warning py-1 px-2 mt-1 small">
-                                    <i class="bi bi-exclamation-triangle me-1"></i>Este cliente ya ha consumido o superado su límite mensual de 5h.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <input type="hidden" id="techNewRmtSelectedClientId">
-                    <input type="hidden" id="techNewRmtSelectedClientName">
-
-                    <!-- Fecha y horas -->
-                    <div class="row g-2">
-                        <div class="col-sm-4">
-                            <label class="form-label small mb-1">Fecha</label>
-                            <input type="date" id="techNewRmtDate" class="form-control form-control-sm bg-dark text-white border-secondary">
-                        </div>
-                        <div class="col-sm-4">
-                            <label class="form-label small mb-1">Hora inicio</label>
-                            <input type="time" id="techNewRmtStartTime" class="form-control form-control-sm bg-dark text-white border-secondary">
-                        </div>
-                        <div class="col-sm-4">
-                            <label class="form-label small mb-1">Hora fin <span class="text-muted" style="font-size:0.75rem;">(opcional)</span></label>
-                            <input type="time" id="techNewRmtEndTime" class="form-control form-control-sm bg-dark text-white border-secondary">
-                        </div>
-                    </div>
-
-                    <!-- Descripción -->
-                    <div class="mt-3">
-                        <label class="form-label small mb-1">Descripción</label>
-                        <textarea id="techNewRmtDescription" class="form-control form-control-sm bg-dark text-white border-secondary" rows="3" placeholder="Describa brevemente el trabajo a realizar..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer border-secondary">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-info btn-sm" onclick="techSubmitNewRemote()" id="techNewRmtSubmitBtn">
-                        <i class="bi bi-plus-lg me-1"></i>Crear Asistencia Remota
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // ====== TOAST NOTIFICATIONS (reemplaza alert() bloqueantes) ======
@@ -1386,8 +1142,7 @@
                                 client_id: e.extendedProps ? e.extendedProps.client_id : null,
                                 service_type: e.extendedProps ? e.extendedProps.service_type : (e.service_type || ''),
                                 desc: e.extendedProps ? e.extendedProps.desc : '',
-                                has_attachments: e.extendedProps ? e.extendedProps.has_attachments : false,
-                                is_remote: e.extendedProps ? (e.extendedProps.is_remote || false) : false
+                                has_attachments: e.extendedProps ? e.extendedProps.has_attachments : false
                             }
                         };
                     });
@@ -1443,9 +1198,6 @@
                 initTechPersonalCalendar();
             }
 
-            if (id === 'section-documentacion') {
-                loadTechDocumentos();
-            }
         }
 
         function initCalendar() {
@@ -1465,13 +1217,11 @@
                     fetch('/api/tasks')
                         .then(function(res) { return res.json(); })
                         .then(function(data) {
-                            var activeTypes = getTechActiveFilters();
                             var filtered = data.filter(function(ev) {
-                                // ✅ Excluir citas sin técnico del calendario (solo aparecen en la lista)
+                                // Excluir citas sin técnico del calendario
                                 if (ev.extendedProps && ev.extendedProps.tech_id === null) return false;
                                 if (!ev.extendedProps && ev.tech_id === null) return false;
-                                var stype = ev.extendedProps ? ev.extendedProps.service_type : ev.service_type;
-                                return activeTypes.length === 0 || activeTypes.includes(stype);
+                                return true;
                             });
                             successCallback(filtered);
                         })
@@ -1520,38 +1270,9 @@
             calendar.render();
         }
 
-        // --- FILTROS POR TIPO DE SERVICIO ---
-        function getTechActiveFilters() {
-            const activeTypes = [];
-            document.querySelectorAll('.tech-filter-cb:checked').forEach(cb => {
-                activeTypes.push(cb.value);
-            });
-            return activeTypes;
-        }
-
-        function checkAllTechFilters() {
-            document.querySelectorAll('.tech-filter-cb').forEach(cb => {
-                cb.checked = true;
-            });
-            updateTechFilters();
-        }
-
-        function updateTechFilters() {
-            if (!calendar) return;
-            // refetchEvents() llama a la función events() que aplica getTechActiveFilters()
-            // loadAllTasksForList() se llama vía eventsSet automáticamente
-            calendar.refetchEvents();
-        }
-
         function handleEventClick(info) {
             const evt = info.event;
             const props = evt.extendedProps || {};
-
-            // ── Si es asistencia remota, abrir modal específico ──────────
-            if (props.is_remote) {
-                openTechRemoteModal(evt.id, evt.title, props);
-                return;
-            }
 
             document.getElementById('evtId').value = evt.id;
             document.getElementById('evtTitle').innerText = evt.title;
@@ -1780,8 +1501,6 @@
 
             // Leer radio de 3 estados (todas / pendientes / completadas)
             const selectedFilter = (document.querySelector('input[name="techTaskStatusFilter"]:checked') || {}).value || 'todas';
-            const activeTypes = getTechActiveFilters();
-
             // Usar allTasksCache (todos los eventos) en lugar de cachedTasks (solo rango visible)
             const source = allTasksCache.length > 0 ? allTasksCache : cachedTasks;
 
@@ -1791,8 +1510,7 @@
                 if      (selectedFilter === 'completadas') statusOk = status === 'completado';
                 else if (selectedFilter === 'pendientes')  statusOk = status !== 'completado';
                 else                                       statusOk = true; // 'todas'
-                const typeOk = activeTypes.length === 0 || activeTypes.includes(t.extendedProps.service_type);
-                return statusOk && typeOk;
+                return statusOk;
             });
 
             // Ordenar por fecha
@@ -1809,25 +1527,18 @@
             container.innerHTML = '';
             filtered.forEach(t => {
                 const isDone   = (t.extendedProps.status || '').toLowerCase() === 'completado';
-                const isRemote = t.extendedProps.is_remote || false;
                 const dateStr  = t.start ? t.start.split('T')[0] : '—';
                 const timeStr  = t.start && t.start.includes('T') ? t.start.split('T')[1].substring(0, 5) : '';
-                const typeColor = t.color || '#6c757d';
-                const itemColor = isRemote ? '#06b6d4' : typeColor;
+                const itemColor = t.color || '#6c757d';
 
                 const div = document.createElement('div');
                 div.className = `task-item status-${t.extendedProps.status}`;
                 div.style.borderLeftColor = itemColor;
                 div.style.borderLeftWidth = '4px';
                 if (isDone) div.style.opacity = '0.65';
-                if (isRemote) div.style.background = 'rgba(6,182,212,0.08)';
-
-                const remoteBadge = isRemote
-                    ? `<span class="badge bg-info text-dark ms-1" style="font-size:0.6rem;">📡 REMOTO</span>`
-                    : '';
 
                 div.innerHTML = `
-                    <div class="fw-bold text-white" style="cursor:pointer;" onclick="focusCalendarEvent('${t.id}')">${t.extendedProps.client || 'Sin cliente'}${remoteBadge}</div>
+                    <div class="fw-bold text-white" style="cursor:pointer;" onclick="focusCalendarEvent('${t.id}')">${t.extendedProps.client || 'Sin cliente'}</div>
                     <div class="small text-secondary">
                         <i class="bi bi-calendar-event me-1"></i>${dateStr}${timeStr ? ' | ' + timeStr : ''}
                         <br>
@@ -1950,12 +1661,6 @@
         function focusCalendarEvent(id) {
             // Buscar el evento en caché para saber si es remoto
             const task = allTasksCache.find(t => t.id == id) || cachedTasks.find(t => t.id == id);
-
-            // Si es asistencia remota, abrir directamente el modal remoto
-            if (task && task.extendedProps && task.extendedProps.is_remote) {
-                openTechRemoteModal(id, task.title, task.extendedProps);
-                return;
-            }
 
             if (!calendar) {
                 // Si el calendario no está inicializado, ir a la sección y esperar
@@ -3378,354 +3083,6 @@
         });
 
         // ═══════════════════════════════════════════════════════════════
-        // ASISTENCIA REMOTA — Modal para Técnico
-        // ═══════════════════════════════════════════════════════════════
-
-        function openTechRemoteModal(taskId, title, props) {
-            // Rellenar campos básicos
-            document.getElementById('techRmtTaskId').value = taskId;
-            document.getElementById('techRmtClientId').value = props.client_id || '';
-            document.getElementById('techRmtClientTitle').textContent = props.client || 'Asistencia Remota';
-
-            // Estado
-            const badge = document.getElementById('techRmtStatusBadge');
-            const st = (props.status || '').toLowerCase();
-            badge.textContent = props.status || 'Pendiente';
-            badge.className = 'badge ' + (
-                st === 'completado'   ? 'bg-success' :
-                st === 'sin asignar' ? 'bg-secondary' :
-                'bg-warning text-dark'
-            );
-            badge.style.cssText = 'font-size:0.9rem; padding:6px 12px;';
-
-            // Reset campos
-            document.getElementById('techRmtStartTime').value = '';
-            document.getElementById('techRmtEndTime').value   = '';
-            document.getElementById('techRmtDescription').value = '';
-            document.getElementById('techRmtDuration').textContent = '—';
-            document.getElementById('techRmtDateLabel').textContent = '';
-            document.getElementById('techRmtWarning').style.display = 'none';
-            document.getElementById('techRmtHoursSection').style.display = 'none';
-            document.getElementById('techRmtClientCard').style.display = 'none';
-
-            // Cargar datos actuales de la tarea desde el servidor
-            fetch(`/api/task/${taskId}`)
-                .then(r => r.json())
-                .then(resp => {
-                    const data = resp.data || resp;
-                    if (data.start_time) document.getElementById('techRmtStartTime').value = data.start_time.substring(0, 5);
-                    if (data.end_time)   document.getElementById('techRmtEndTime').value   = data.end_time.substring(0, 5);
-                    if (data.description) document.getElementById('techRmtDescription').value = data.description;
-                    if (data.date) document.getElementById('techRmtDateLabel').textContent = data.date;
-                    updateTechRmtDuration();
-
-                    // Mostrar ficha cliente con soporte
-                    const ci = data.client_info;
-                    if (ci) {
-                        document.getElementById('techRmtClientCardName').textContent  = ci.name || '—';
-                        document.getElementById('techRmtClientCardPhone').textContent = ci.phone || '—';
-                        document.getElementById('techRmtClientCardEmail').textContent = ci.email || '—';
-                        const badgeOk = document.getElementById('techRmtSupportBadge');
-                        const badgeNo = document.getElementById('techRmtNoSupportBadge');
-                        if (ci.has_support) {
-                            badgeOk.style.display = 'inline-block';
-                            badgeNo.style.display = 'none';
-                        } else {
-                            badgeOk.style.display = 'none';
-                            badgeNo.style.display = 'inline-block';
-                        }
-                        document.getElementById('techRmtClientCard').style.display = 'block';
-                    }
-                })
-                .catch(() => {});
-
-            // Cargar horas mensuales del cliente
-            const clientId = props.client_id;
-            if (clientId) {
-                fetch(`/api/client/${clientId}/monthly_remote_hours`)
-                    .then(r => r.json())
-                    .then(data => {
-                        if (!data.success) return;
-                        document.getElementById('techRmtHoursSection').style.display = 'block';
-                        const pct = Math.min(100, (data.used_hours / data.limit_hours) * 100);
-                        const bar = document.getElementById('techRmtHoursBar');
-                        bar.style.width      = pct + '%';
-                        bar.style.background = pct >= 100 ? '#ef4444' : pct >= 80 ? '#f59e0b' : '#06b6d4';
-                        document.getElementById('techRmtHoursLabel').textContent  = `${data.used_hours}h / ${data.limit_hours}h`;
-                        document.getElementById('techRmtHoursDetail').textContent =
-                            `${data.session_count} sesión(es) · Restantes: ${data.remaining_hours}h · Mes: ${data.month}`;
-                    })
-                    .catch(() => {});
-            }
-
-            new bootstrap.Modal(document.getElementById('modalTechRemoteAssistance')).show();
-        }
-
-        function updateTechRmtDuration() {
-            const t0 = document.getElementById('techRmtStartTime').value;
-            const t1 = document.getElementById('techRmtEndTime').value;
-            const el = document.getElementById('techRmtDuration');
-            if (!t0 || !t1) { el.textContent = '—'; return; }
-            const diff = (new Date('1970-01-01T' + t1) - new Date('1970-01-01T' + t0)) / 3600000;
-            if (diff <= 0) { el.textContent = '—'; return; }
-            const h = Math.floor(diff);
-            const m = Math.round((diff - h) * 60);
-            el.textContent = h ? `${h}h${m ? m+'m' : ''}` : `${m}m`;
-        }
-
-        function techRmtSave(markComplete) {
-            const taskId      = document.getElementById('techRmtTaskId').value;
-            const startTime   = document.getElementById('techRmtStartTime').value;
-            const endTime     = document.getElementById('techRmtEndTime').value;
-            const description = document.getElementById('techRmtDescription').value.trim();
-
-            if (markComplete && !startTime) {
-                showToast('Introduce la hora de inicio antes de completar', 'error');
-                return;
-            }
-
-            fetch(`/api/remote_task/${taskId}/update`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    start_time: startTime,
-                    end_time: endTime,
-                    description,
-                    mark_complete: markComplete
-                })
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    if (data.warning) {
-                        document.getElementById('techRmtWarningText').textContent = data.warning;
-                        document.getElementById('techRmtWarning').style.display = 'block';
-                    }
-                    showToast(markComplete ? '✅ Asistencia completada' : '✅ Guardado', 'success');
-                    // Actualizar badge de estado
-                    if (data.status) {
-                        const badge = document.getElementById('techRmtStatusBadge');
-                        const st = data.status.toLowerCase();
-                        badge.textContent = data.status;
-                        badge.className = 'badge ' + (st === 'completado' ? 'bg-success' : 'bg-warning text-dark');
-                    }
-                    if (markComplete) {
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('modalTechRemoteAssistance'));
-                        if (modal) modal.hide();
-                    }
-                    if (calendar) calendar.refetchEvents();
-                } else {
-                    showToast('❌ ' + (data.msg || 'Error al guardar'), 'error');
-                }
-            })
-            .catch(() => showToast('❌ Error de conexión', 'error'));
-        }
-
-        function techRmtDelete() {
-            const taskId = document.getElementById('techRmtTaskId').value;
-            if (!confirm('¿Eliminar esta asistencia remota?')) return;
-
-            fetch(`/api/task/${taskId}/delete`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalTechRemoteAssistance'));
-                    if (modal) modal.hide();
-                    showToast('🗑️ Asistencia eliminada', 'success');
-                    if (calendar) calendar.refetchEvents();
-                } else {
-                    showToast('❌ No se pudo eliminar', 'error');
-                }
-            })
-            .catch(() => showToast('❌ Error de conexión', 'error'));
-        }
-
-        // ═══════════════════════════════════════════════════════════════
-        // NUEVA ASISTENCIA REMOTA — Creada desde el calendario del técnico
-        // ═══════════════════════════════════════════════════════════════
-
-        (function initTechNewRemoteModal() {
-            document.addEventListener('DOMContentLoaded', function () {
-                var modal = document.getElementById('modalNewRemoteTech');
-                if (!modal) return;
-
-                // Al abrir: pre-rellenar fecha de hoy
-                modal.addEventListener('show.bs.modal', function () {
-                    var dateEl = document.getElementById('techNewRmtDate');
-                    if (dateEl && !dateEl.value) {
-                        dateEl.value = new Date().toISOString().split('T')[0];
-                    }
-                });
-                modal.addEventListener('shown.bs.modal', function () {
-                    var inp = document.getElementById('techNewRmtClientSearch');
-                    if (inp) inp.focus();
-                    _initTechNewRmtSearch();
-                });
-
-                // Al cerrar: limpiar todo
-                modal.addEventListener('hidden.bs.modal', function () {
-                    ['techNewRmtClientSearch','techNewRmtDescription','techNewRmtStartTime',
-                     'techNewRmtEndTime','techNewRmtSelectedClientId','techNewRmtSelectedClientName']
-                        .forEach(function (id) {
-                            var el = document.getElementById(id);
-                            if (el) el.value = '';
-                        });
-                    var dateEl = document.getElementById('techNewRmtDate');
-                    if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
-                    var card = document.getElementById('techNewRmtClientCard');
-                    if (card) card.style.display = 'none';
-                    var hrs = document.getElementById('techNewRmtHoursSection');
-                    if (hrs) hrs.style.display = 'none';
-                    _closeTechNewRmtList();
-                    var btn = document.getElementById('techNewRmtSubmitBtn');
-                    if (btn) {
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="bi bi-plus-lg me-1"></i>Crear Asistencia Remota';
-                    }
-                });
-            });
-        }());
-
-        var _techNewRmtSearchReady = false;
-
-        function _initTechNewRmtSearch() {
-            if (_techNewRmtSearchReady) return;
-            _techNewRmtSearchReady = true;
-
-            var input = document.getElementById('techNewRmtClientSearch');
-            var list  = document.getElementById('techNewRmtClientsList');
-            if (!input || !list) return;
-
-            list.style.zIndex = '9999';
-
-            input.addEventListener('input', function () {
-                var q = this.value.trim();
-                if (q.length < 2) { _closeTechNewRmtList(); return; }
-                fetch('/api/clients_search?q=' + encodeURIComponent(q))
-                    .then(function (res) { return res.json(); })
-                    .then(function (items) {
-                        list.innerHTML = '';
-                        if (!Array.isArray(items) || items.length === 0) { _closeTechNewRmtList(); return; }
-                        items.forEach(function (item) {
-                            var div = document.createElement('div');
-                            div.className = 'suggestion-item';
-                            div.textContent = item.name + (item.has_support ? ' ✓' : '');
-                            div.addEventListener('mousedown', function (e) {
-                                e.preventDefault();
-                                _selectTechNewRmtClient(item);
-                            });
-                            list.appendChild(div);
-                        });
-                        list.style.display = 'block';
-                    })
-                    .catch(function () { _closeTechNewRmtList(); });
-            });
-
-            input.addEventListener('blur', function () { setTimeout(_closeTechNewRmtList, 150); });
-            input.addEventListener('keydown', function (e) { if (e.key === 'Escape') _closeTechNewRmtList(); });
-            document.addEventListener('mousedown', function (e) {
-                if (!input.contains(e.target) && !list.contains(e.target)) _closeTechNewRmtList();
-            });
-        }
-
-        function _closeTechNewRmtList() {
-            var list = document.getElementById('techNewRmtClientsList');
-            if (list) { list.innerHTML = ''; list.style.display = 'none'; }
-        }
-
-        function _selectTechNewRmtClient(item) {
-            document.getElementById('techNewRmtSelectedClientId').value   = item.id;
-            document.getElementById('techNewRmtSelectedClientName').value = item.name;
-            document.getElementById('techNewRmtClientSearch').value       = item.name;
-            _closeTechNewRmtList();
-
-            document.getElementById('techNewRmtClientName').textContent  = item.name;
-            document.getElementById('techNewRmtClientPhone').textContent = item.phone || '—';
-            document.getElementById('techNewRmtClientEmail').textContent = item.email || '—';
-
-            var badgeOk = document.getElementById('techNewRmtSupportBadge');
-            var badgeNo = document.getElementById('techNewRmtNoSupportBadge');
-            if (item.has_support) {
-                badgeOk.style.display = 'inline-block';
-                badgeNo.style.display = 'none';
-            } else {
-                badgeOk.style.display = 'none';
-                badgeNo.style.display = 'inline-block';
-            }
-            document.getElementById('techNewRmtClientCard').style.display = 'block';
-
-            // Cargar horas mensuales del cliente
-            fetch('/api/client/' + item.id + '/monthly_remote_hours')
-                .then(function (r) { return r.json(); })
-                .then(function (data) {
-                    if (!data.success) return;
-                    var section = document.getElementById('techNewRmtHoursSection');
-                    section.style.display = 'block';
-                    var pct = Math.min(100, (data.used_hours / data.limit_hours) * 100);
-                    var bar = document.getElementById('techNewRmtHoursBar');
-                    bar.style.width      = pct + '%';
-                    bar.style.background = pct >= 100 ? '#ef4444' : pct >= 80 ? '#f59e0b' : '#06b6d4';
-                    document.getElementById('techNewRmtHoursLabel').textContent = data.used_hours + 'h / ' + data.limit_hours + 'h';
-                    var warn = document.getElementById('techNewRmtHoursWarning');
-                    warn.style.display = data.over_limit ? 'block' : 'none';
-                })
-                .catch(function () {});
-        }
-
-        function techSubmitNewRemote() {
-            var clientId   = document.getElementById('techNewRmtSelectedClientId').value;
-            var clientName = document.getElementById('techNewRmtSelectedClientName').value;
-            if (!clientId || !clientName) {
-                showToast('⚠️ Por favor selecciona un cliente', 'error');
-                return;
-            }
-
-            var description = document.getElementById('techNewRmtDescription').value.trim();
-            var dateVal     = (document.getElementById('techNewRmtDate')      || {}).value || null;
-            var startTime   = (document.getElementById('techNewRmtStartTime') || {}).value || null;
-            var endTime     = (document.getElementById('techNewRmtEndTime')   || {}).value || null;
-
-            var btn = document.getElementById('techNewRmtSubmitBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Creando...';
-
-            fetch('/api/remote_assistance', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    client_id: clientId,
-                    client_name: clientName,
-                    description: description,
-                    date: dateVal,
-                    start_time: startTime || null,
-                    end_time: endTime || null,
-                    tech_id: null   // el backend asigna al usuario autenticado cuando es null
-                })
-            })
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-plus-lg me-1"></i>Crear Asistencia Remota';
-                if (data.success) {
-                    showToast('✅ Asistencia remota creada', 'success');
-                    var m = bootstrap.Modal.getInstance(document.getElementById('modalNewRemoteTech'));
-                    if (m) m.hide();
-                    if (calendar) calendar.refetchEvents();
-                } else {
-                    showToast('❌ ' + (data.msg || 'Error al crear'), 'error');
-                }
-            })
-            .catch(function () {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-plus-lg me-1"></i>Crear Asistencia Remota';
-                showToast('❌ Error de conexión', 'error');
-            });
-        }
-
-        // ═══════════════════════════════════════════════════════════════
         // TAREAS SIN ASIGNAR — Visibles y completables por técnicos
         // ═══════════════════════════════════════════════════════════════
 
@@ -3962,77 +3319,6 @@
             btn.style.border = '3px solid #fff';
         }
 
-        // ═══════════════════════════════════════════════════════════════
-        // DOCUMENTACIÓN (TÉCNICO)
-        // ═══════════════════════════════════════════════════════════════
-        var _techDocsData = [];
-
-        function loadTechDocumentos() {
-            const cat = (document.getElementById('techDocCategory') || {}).value || '';
-            let url = '/api/documentos';
-            if (cat) url += '?category=' + encodeURIComponent(cat);
-            fetch(url)
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) {
-                        _techDocsData = data.data;
-                        renderTechDocumentos();
-                    }
-                })
-                .catch(err => console.error('Error cargando documentos:', err));
-        }
-
-        function renderTechDocumentos() {
-            const container = document.getElementById('techDocumentosContainer');
-            if (!container) return;
-            const search = (document.getElementById('techDocSearch') || {}).value || '';
-            let filtered = _techDocsData;
-            if (search) {
-                const q = search.toLowerCase();
-                filtered = filtered.filter(d => d.title.toLowerCase().includes(q) || (d.description || '').toLowerCase().includes(q));
-            }
-
-            if (filtered.length === 0) {
-                container.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="bi bi-folder2-open me-2 fs-2"></i><br>Sin documentos</div>';
-                return;
-            }
-
-            const catColors = { general:'info', tecnico:'warning', empresa:'primary', contrato:'success' };
-            container.innerHTML = filtered.map(d => `
-                <div class="col-12 col-md-6 col-lg-4">
-                    <div class="card h-100" style="background:var(--nintec-card); border:1px solid #1e1e3a; cursor:pointer;" onclick="techViewDocumento(${d.id})">
-                        <div class="card-body">
-                            <div class="d-flex align-items-start gap-2 mb-2">
-                                <i class="bi bi-file-earmark-text fs-4 text-info flex-shrink-0"></i>
-                                <div>
-                                    <h6 class="text-white fw-bold mb-0">${d.title.replace(/</g,'&lt;')}</h6>
-                                    ${d.description ? `<p class="text-muted small mb-0">${d.description.replace(/</g,'&lt;')}</p>` : ''}
-                                </div>
-                            </div>
-                            <div class="d-flex gap-1 mt-2">
-                                <span class="badge bg-${catColors[d.category]||'secondary'} bg-opacity-25 border text-light" style="font-size:0.7rem;">${d.category}</span>
-                                <span class="badge bg-dark border border-secondary text-muted" style="font-size:0.7rem;"><i class="bi bi-calendar me-1"></i>${(d.created_at||'').substring(0,10)}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>`).join('');
-        }
-
-        function techViewDocumento(id) {
-            fetch(`/api/documentos/${id}`)
-                .then(r => r.json())
-                .then(data => {
-                    if (!data.success) return;
-                    const d = data.doc;
-                    document.getElementById('techViewDocTitle').innerHTML = `<i class="bi bi-file-earmark-text me-2 text-info"></i>${d.title.replace(/</g,'&lt;')}`;
-                    document.getElementById('techViewDocMeta').innerHTML =
-                        `<span class="badge bg-info bg-opacity-25 border border-info text-light">${d.category}</span>` +
-                        `<span class="badge bg-dark border border-secondary text-muted"><i class="bi bi-person me-1"></i>${d.uploaded_by}</span>` +
-                        `<span class="badge bg-dark border border-secondary text-muted"><i class="bi bi-calendar me-1"></i>${(d.created_at||'').substring(0,10)}</span>`;
-                    document.getElementById('techViewDocContent').textContent = d.content || '(Sin contenido)';
-                    new bootstrap.Modal(document.getElementById('modalViewDocumentoTech')).show();
-                });
-        }
 
     </script>
 
@@ -4109,24 +3395,6 @@
     </div>
 </div>
 
-<!-- Modal: Ver Documento (Técnico) -->
-<div class="modal fade" id="modalViewDocumentoTech" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
-        <div class="modal-content bg-dark text-white border-info">
-            <div class="modal-header border-info">
-                <h5 class="modal-title" id="techViewDocTitle"><i class="bi bi-file-earmark-text me-2 text-info"></i></h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="d-flex gap-2 mb-3 flex-wrap" id="techViewDocMeta"></div>
-                <div id="techViewDocContent" class="p-3 rounded" style="background:#0a0a18; border:1px solid #333; min-height:200px; white-space:pre-wrap; font-family:'Courier New', monospace; font-size:0.9rem; line-height:1.6;"></div>
-            </div>
-            <div class="modal-footer border-secondary">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 </body>
 
