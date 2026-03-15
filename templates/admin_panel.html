@@ -161,26 +161,7 @@
             font-weight: bold !important;
         }
         .objetivo-event .fc-event-title::before { content: ""; }
-        /* Badge de soporte mejorado para mejor visibilidad */
-        .support-badge {
-            background-color: #28a745 !important;
-            color: white !important;
-            font-weight: 700 !important;
-            padding: 6px 12px !important;
-            font-size: 0.85rem !important;
-            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.4);
-            border: 2px solid #20c997 !important;
-        }
 
-        .no-support-badge {
-            background-color: #dc3545 !important;
-            color: white !important;
-            font-weight: 700 !important;
-            padding: 6px 12px !important;
-            font-size: 0.85rem !important;
-            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4);
-            border: 2px solid #c82333 !important;
-        }
 
         /* Mobile overrides */
         @media(max-width: 768px) {
@@ -357,46 +338,14 @@
             .modal-content { max-height: 96vh !important; }
             .modal-dialog  { margin: 0.25rem; }
             
-            /* Soporte Schedule - Móvil */
-            #addSupportScheduleDiv,
-            #editSupportScheduleDiv {
-                padding: 0.75rem !important;
-            }
-            
-            .schedule-btn {
-                font-size: 0.75rem !important;
-                width: 100% !important;
-            }
+
             
             /* Asegurar que el modal body sea completamente scrollable */
             .modal-body {
                 min-height: 50vh;
             }
         }
-    /* Support Schedule Mobile Fix */
-        @media(max-width: 576px) {
-            .schedule-btn {
-                width: 100% !important;
-                font-size: 0.85rem;
-                padding: 0.5rem 0.25rem;
-            }
-            
-            #addSupportScheduleDiv .d-flex {
-                flex-direction: column !important;
-            }
-            
-            #editSupportScheduleDiv .d-flex {
-                flex-direction: column !important;
-            }
-        }
 
-        /* Support Schedule Tablet Fix */
-        @media(min-width: 577px) and (max-width: 768px) {
-            .schedule-btn {
-                font-size: 0.8rem;
-                padding: 0.4rem 0.5rem;
-            }
-        }
 
         /* ═══════ NINTEC SOLUTIONS THEME ═══════ */
         .text-nintec  { color: var(--nintec-cyan) !important; }
@@ -581,8 +530,7 @@
                     data-bs-target="#pagos" id="tabPagosBtn" onclick="loadPaymentsList()">PAGOS</button></li>
             <li class="nav-item"><button class="nav-link w-100" data-bs-toggle="tab"
                     data-bs-target="#documentacion" id="tabDocumentacionBtn" onclick="loadDocumentos()">DOCUMENTACIÓN</button></li>
-            <li class="nav-item"><button class="nav-link w-100" data-bs-toggle="tab"
-                    data-bs-target="#cal-personal-admin" id="tabCalPersonalAdminBtn">MI CALENDARIO</button></li>
+
 
         </ul>
 
@@ -828,44 +776,7 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <h6 class="card-title text-warning fw-bold mb-0">{{ c.name }}</h6>
-                                {% if c.has_support %}
-                                    <span class="badge support-badge">
-                                        <i class="bi bi-shield-check"></i> Soporte
-                                    </span>
-                                {% else %}
-                                    <span class="badge no-support-badge">
-                                        <i class="bi bi-shield-x"></i> Sin Soporte
-                                    </span>
-                                {% endif %}
                                 </div>
-
-                                {% if c.has_support and c.support_schedule %}
-                                <div class="mb-1 d-flex flex-wrap gap-1 align-items-center">
-                                    {% if c.support_schedule == 'lv' %}
-                                    <span class="badge bg-success bg-opacity-25 border border-success text-success" style="font-size:0.72rem;">
-                                        <i class="bi bi-clock me-1"></i>L–V
-                                    </span>
-                                    {% elif c.support_schedule == 'ls' %}
-                                    <span class="badge bg-warning bg-opacity-25 border border-warning text-warning" style="font-size:0.72rem;">
-                                        <i class="bi bi-clock me-1"></i>L–S
-                                    </span>
-                                    {% elif c.support_schedule == 'ld' %}
-                                    <span class="badge bg-danger bg-opacity-25 border border-danger text-danger" style="font-size:0.72rem;">
-                                        <i class="bi bi-clock me-1"></i>L–D
-                                    </span>
-                                    {% endif %}
-                                    {% if c.support_amount %}
-                                    <span class="badge bg-info bg-opacity-25 border border-info text-info" style="font-size:0.72rem;">
-                                        <i class="bi bi-currency-euro me-1"></i>{{ "%.0f"|format(c.support_amount) }}€/mes
-                                    </span>
-                                    {% endif %}
-                                    {% if c.support_free_hours %}
-                                    <span class="badge bg-purple bg-opacity-25 border border-secondary text-light" style="font-size:0.72rem; background:rgba(124,58,237,0.25) !important;">
-                                        <i class="bi bi-clock-history me-1"></i>{{ c.support_free_hours|int }}h gratis
-                                    </span>
-                                    {% endif %}
-                                </div>
-                                {% endif %}
 
                                 <hr class="border-secondary my-2">
 
@@ -961,7 +872,6 @@
                                     <th>Teléfono</th>
                                     <th>Email</th>
                                     <th>Dirección</th>
-                                    <th>Soporte</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -978,15 +888,7 @@
                                         <span class="text-muted small">{{ c.address|truncate(35) }}</span>
                                         <a href="https://www.google.com/maps/search/?api=1&query={{ c.address | urlencode }}" target="_blank" class="ms-1 text-warning" title="Google Maps"><i class="bi bi-geo-alt-fill" style="font-size:0.7rem;"></i></a>
                                     </td>
-                                    <td>
-                                        {% if c.has_support %}
-                                        <span class="badge support-badge"><i class="bi bi-shield-check"></i>
-                                            {% if c.support_schedule == 'lv' %}L-V{% elif c.support_schedule == 'ls' %}L-S{% elif c.support_schedule == 'ld' %}L-D{% endif %}
-                                        </span>
-                                        {% else %}
-                                        <span class="badge no-support-badge"><i class="bi bi-shield-x"></i></span>
-                                        {% endif %}
-                                    </td>
+
                                     <td>
                                         <div class="d-flex gap-1">
                                             <button class="btn btn-xs btn-outline-info py-0 px-1" onclick="showClientServiceHistory({{ c.id }}, '{{ c.name }}')" title="Historial"><i class="bi bi-clock-history"></i></button>
@@ -1780,42 +1682,6 @@
                         <label class="form-label">Notas Internas</label>
                         <textarea name="notes" class="form-control" rows="2" placeholder="Comentarios internos sobre el cliente"></textarea>
                     </div>
-                    <hr class="border-secondary">
-                    <div class="mb-2">
-                        <label class="form-label fw-bold">¿Tiene Soporte Técnico Contratado?</label>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="hasSupportSwitch" name="has_support">
-                            <label class="form-check-label" for="hasSupportSwitch">Sí, tiene soporte técnico</label>
-                        </div>
-                        <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Marca esta opción si el cliente tiene contratado soporte técnico con Nintec Solutions</small>
-                    </div>
-                    <div class="mb-3 p-2 rounded border border-info" id="addSupportScheduleDiv" style="display:none; background:rgba(13,202,240,0.07);">
-                        <label class="form-label fw-bold text-info mb-2 small"><i class="bi bi-calendar-check me-1"></i>Días de Soporte Disponibles</label>
-                        <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-sm btn-outline-success schedule-btn" onclick="selectSchedule('add','lv')">
-                                <i class="bi bi-calendar-week me-1"></i>Lunes – Viernes
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-warning schedule-btn" onclick="selectSchedule('add','ls')">
-                                <i class="bi bi-calendar-week me-1"></i>Lunes – Sábado
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-danger schedule-btn" onclick="selectSchedule('add','ld')">
-                                <i class="bi bi-calendar-week me-1"></i>Lunes – Domingo
-                            </button>
-                        </div>
-                        <input type="hidden" name="support_schedule" id="addSupportScheduleValue" value="lv">
-                        <small class="text-muted mt-2 d-block"><i class="bi bi-info-circle me-1"></i>Selecciona horario de soporte</small>
-                        <hr class="border-secondary my-2">
-                        <div class="row g-2 mt-1">
-                            <div class="col-6">
-                                <label class="form-label small text-info fw-bold"><i class="bi bi-currency-euro me-1"></i>Importe Soporte (€/mes)</label>
-                                <input type="number" name="support_amount" id="addSupportAmount" class="form-control bg-black text-white border-secondary" step="0.01" min="0" placeholder="0.00">
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label small text-info fw-bold"><i class="bi bi-clock me-1"></i>Horas Gratuitas</label>
-                                <input type="number" name="support_free_hours" id="addSupportFreeHours" class="form-control bg-black text-white border-secondary" step="0.5" min="0" placeholder="0">
-                            </div>
-                        </div>
-                    </div>
                 </div><!-- /modal-body -->
                 </form>
                 <div class="modal-footer border-secondary">
@@ -1866,42 +1732,6 @@
                     <div class="mb-3">
                         <label class="form-label">Notas Internas</label>
                         <textarea name="notes" id="editClientNotes" class="form-control" rows="2"></textarea>
-                    </div>
-                    <hr class="border-secondary">
-                    <div class="mb-2">
-                        <label class="form-label fw-bold">¿Tiene Soporte Técnico Contratado?</label>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="editHasSupport" name="has_support">
-                            <label class="form-check-label" for="editHasSupport">Sí, tiene soporte técnico</label>
-                        </div>
-                        <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Marca esta opción si el cliente tiene contratado soporte técnico con Nintec Solutions</small>
-                    </div>
-                    <div class="mb-3 p-2 rounded border border-info" id="editSupportScheduleDiv" style="display:none; background:rgba(13,202,240,0.07);">
-                        <label class="form-label fw-bold text-info mb-2 small"><i class="bi bi-calendar-check me-1"></i>Días de Soporte Disponibles</label>
-                        <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-sm btn-outline-success schedule-btn" onclick="selectSchedule('edit','lv')">
-                                <i class="bi bi-calendar-week me-1"></i>Lunes – Viernes
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-warning schedule-btn" onclick="selectSchedule('edit','ls')">
-                                <i class="bi bi-calendar-week me-1"></i>Lunes – Sábado
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-danger schedule-btn" onclick="selectSchedule('edit','ld')">
-                                <i class="bi bi-calendar-week me-1"></i>Lunes – Domingo
-                            </button>
-                        </div>
-                        <input type="hidden" name="support_schedule" id="editSupportScheduleValue" value="lv">
-                        <small class="text-muted mt-2 d-block"><i class="bi bi-info-circle me-1"></i>Selecciona horario de soporte</small>
-                        <hr class="border-secondary my-2">
-                        <div class="row g-2 mt-1">
-                            <div class="col-6">
-                                <label class="form-label small text-info fw-bold"><i class="bi bi-currency-euro me-1"></i>Importe Soporte (€/mes)</label>
-                                <input type="number" name="support_amount" id="editSupportAmount" class="form-control bg-black text-white border-secondary" step="0.01" min="0" placeholder="0.00">
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label small text-info fw-bold"><i class="bi bi-clock me-1"></i>Horas Gratuitas</label>
-                                <input type="number" name="support_free_hours" id="editSupportFreeHours" class="form-control bg-black text-white border-secondary" step="0.5" min="0" placeholder="0">
-                            </div>
-                        </div>
                     </div>
                 </div><!-- /modal-body -->
                 </form>
@@ -2892,13 +2722,7 @@
             }
         });
 
-        // Personal calendar: shown.bs.tab garantiza que el tab-pane es visible.
-        // initPersonalCalendar() gestiona tanto la primera creación como los refrescos.
-        document.addEventListener('shown.bs.tab', function(e) {
-            if (e.target && e.target.getAttribute('data-bs-target') === '#cal-personal-admin') {
-                initPersonalCalendar();
-            }
-        });
+
 
         // --- LÓGICA DE FILTRADO DINÁMICO ---
         function getActiveFilters() {
@@ -3195,9 +3019,6 @@
             document.getElementById('editClientAddress').value = '';
             document.getElementById('editClientLink').value = '';
             document.getElementById('editClientNotes').value = '';
-            document.getElementById('editHasSupport').checked = false;
-            toggleSupportSchedule('editSupportScheduleDiv', 'edit', false);
-
             new bootstrap.Modal(document.getElementById('modalEditClient')).show();
 
             // Cargar datos reales desde API
@@ -3213,16 +3034,7 @@
                         document.getElementById('editClientAddress').value = c.address;
                         document.getElementById('editClientLink').value = c.link || '';
                         document.getElementById('editClientNotes').value = c.notes || '';
-                        document.getElementById('editHasSupport').checked = c.has_support;
-                        toggleSupportSchedule('editSupportScheduleDiv', 'edit', c.has_support);
-                        var sched = c.support_schedule || 'lv';
-                        var hidden = document.getElementById('editSupportScheduleValue');
-                        if (hidden) { hidden.value = sched; }
-                        selectSchedule('edit', sched);
-                        var esa = document.getElementById('editSupportAmount');
-                        if (esa) esa.value = c.support_amount != null ? c.support_amount : '';
-                        var esfh = document.getElementById('editSupportFreeHours');
-                        if (esfh) esfh.value = c.support_free_hours != null ? c.support_free_hours : '';
+
                     } else {
                         alert('Error al cargar datos del cliente');
                         bootstrap.Modal.getInstance(document.getElementById('modalEditClient')).hide();
@@ -3234,61 +3046,8 @@
                 });
         }
 
-        // ==================== SOPORTE: días disponibles ====================
-        function toggleSupportSchedule(divId, prefix, show) {
-            var div = document.getElementById(divId);
-            if (!div) return;
-            div.style.display = show ? 'block' : 'none';
-            if (show) {
-                var hidden = document.getElementById(prefix + 'SupportScheduleValue');
-                var val = (hidden && hidden.value) ? hidden.value : 'lv';
-                if (hidden) hidden.value = val;
-                selectSchedule(prefix, val);
-                // Scroll automático al fondo del modal-body para mostrar los días de soporte
-                setTimeout(function() {
-                    var modalBody = div.closest('.modal-body');
-                    if (modalBody) {
-                        div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                        modalBody.scrollTop = modalBody.scrollHeight;
-                    }
-                }, 60);
-            }
-        }
-
-        function selectSchedule(prefix, value) {
-            var divId = prefix + 'SupportScheduleDiv';
-            var div = document.getElementById(divId);
-            if (!div) return;
-            var hidden = document.getElementById(prefix + 'SupportScheduleValue');
-            if (hidden) hidden.value = value;
-            var btns = div.querySelectorAll('.schedule-btn');
-            var colorMap = { lv: 'success', ls: 'warning', ld: 'danger' };
-            var values = ['lv', 'ls', 'ld'];
-            btns.forEach(function(btn, i) {
-                var v = values[i];
-                var color = colorMap[v];
-                btn.classList.remove('btn-success','btn-warning','btn-danger',
-                                     'btn-outline-success','btn-outline-warning','btn-outline-danger');
-                btn.classList.add(v === value ? 'btn-' + color : 'btn-outline-' + color);
-            });
-        }
-
         // Vinculación robusta: funciona si DOM ya está cargado (scripts al final del body)
         function _initSupportAndDelegation() {
-            var addSwitch = document.getElementById('hasSupportSwitch');
-            if (addSwitch && !addSwitch._bound) {
-                addSwitch._bound = true;
-                addSwitch.addEventListener('change', function() {
-                    toggleSupportSchedule('addSupportScheduleDiv', 'add', this.checked);
-                });
-            }
-            var editSwitch = document.getElementById('editHasSupport');
-            if (editSwitch && !editSwitch._bound) {
-                editSwitch._bound = true;
-                editSwitch.addEventListener('change', function() {
-                    toggleSupportSchedule('editSupportScheduleDiv', 'edit', this.checked);
-                });
-            }
             if (!document.body._delegBound) {
                 document.body._delegBound = true;
                 document.body.addEventListener('click', function(e) {
@@ -7161,150 +6920,6 @@ function deleteObjetivo(id) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// CALENDARIO PERSONAL (ADMIN)
-// ══════════════════════════════════════════════════════════════════
-var _personalCalendarAdmin = null;
-var _selectedPEColor = '#7c3aed';
-var _currentPEId = null;
-
-function selectPEColor(color, btn) {
-    _selectedPEColor = color;
-    document.getElementById('peColor').value = color;
-    document.querySelectorAll('.pe-color-btn').forEach(b => b.style.border = '2px solid #444');
-    if (btn) btn.style.border = '3px solid #fff';
-}
-
-function initPersonalCalendar() {
-    // Si ya existe, solo redimensionar y recargar — el elemento ya es visible
-    // porque esta función SOLO se llama desde shown.bs.tab (garantía de visibilidad)
-    if (_personalCalendarAdmin) {
-        try {
-            _personalCalendarAdmin.updateSize();
-            _personalCalendarAdmin.refetchEvents();
-        } catch(e) {}
-        return;
-    }
-    const el = document.getElementById('personalCalendarAdmin');
-    if (!el) return;
-
-    // No setTimeout: shown.bs.tab ya garantiza que el elemento es visible
-    _personalCalendarAdmin = new FullCalendar.Calendar(el, {
-        initialView: 'dayGridMonth',
-        locale: 'es',
-        height: 'auto',
-        expandRows: true,
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,listMonth'
-        },
-        buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', list: 'Lista' },
-        selectable: true,
-        selectMirror: true,
-        nowIndicator: true,
-        // Clic en un día vacío → pre-rellenar fecha en el modal
-        dateClick: function(info) {
-            document.getElementById('peStartDate').value = info.dateStr;
-            document.getElementById('peEndDate').value   = info.dateStr;
-            var t  = document.getElementById('peTitle');       if (t)  t.value  = '';
-            var d  = document.getElementById('peDescription'); if (d)  d.value  = '';
-            var st = document.getElementById('peStartTime');   if (st) st.value = '';
-            var et = document.getElementById('peEndTime');     if (et) et.value = '';
-            document.getElementById('peColor').value = _selectedPEColor;
-            new bootstrap.Modal(document.getElementById('modalAddPersonalEvent')).show();
-        },
-        // Arrastrar rango → pre-rellenar fechas inicio/fin
-        select: function(info) {
-            document.getElementById('peStartDate').value = info.startStr.split('T')[0];
-            document.getElementById('peEndDate').value   = info.endStr
-                ? info.endStr.split('T')[0] : info.startStr.split('T')[0];
-            new bootstrap.Modal(document.getElementById('modalAddPersonalEvent')).show();
-        },
-        eventClick: function(info) {
-            _currentPEId = parseInt(info.event.id);
-            viewPersonalEvent(info.event);
-        },
-        events: function(info, successCb, failureCb) {
-            fetch('/api/personal_events')
-                .then(function(r) { return r.json(); })
-                .then(function(data) {
-                    if (data.success) {
-                        successCb(data.data.map(function(e) {
-                            return {
-                                id:    e.id,
-                                title: e.title,
-                                start: e.all_day
-                                    ? e.start_date
-                                    : (e.start_time ? e.start_date + 'T' + e.start_time : e.start_date),
-                                end: e.end_date
-                                    ? (e.end_time ? e.end_date + 'T' + e.end_time : e.end_date)
-                                    : null,
-                                color:  e.color || '#7c3aed',
-                                allDay: e.all_day,
-                                extendedProps: { description: e.description || '' }
-                            };
-                        }));
-                    } else { failureCb(); }
-                }).catch(failureCb);
-        }
-    });
-    _personalCalendarAdmin.render();
-}
-
-function savePersonalEvent() {
-    const title = document.getElementById('peTitle').value.trim();
-    const startDate = document.getElementById('peStartDate').value;
-    if (!title) { showAdminToast('El título es obligatorio', 'error'); return; }
-    if (!startDate) { showAdminToast('La fecha de inicio es obligatoria', 'error'); return; }
-    fetch('/api/personal_events', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            title,
-            description: document.getElementById('peDescription').value,
-            start_date: startDate,
-            start_time: document.getElementById('peStartTime').value || null,
-            end_date: document.getElementById('peEndDate').value || startDate,
-            end_time: document.getElementById('peEndTime').value || null,
-            color: document.getElementById('peColor').value || '#7c3aed',
-            all_day: !document.getElementById('peStartTime').value
-        })
-    })
-    .then(r => r.json())
-    .then(d => {
-        if (d.success) {
-            bootstrap.Modal.getInstance(document.getElementById('modalAddPersonalEvent')).hide();
-            showAdminToast('<i class="bi bi-check-circle-fill me-2"></i>Evento creado', 'success');
-            if (_personalCalendarAdmin) _personalCalendarAdmin.refetchEvents();
-        } else { showAdminToast(d.msg || 'Error', 'error'); }
-    });
-}
-
-function viewPersonalEvent(event) {
-    document.getElementById('peViewTitle').innerHTML = `<i class="bi bi-calendar-event me-2" style="color:${event.backgroundColor}"></i>${_esc(event.title)}`;
-    const desc = event.extendedProps.description || '';
-    document.getElementById('peViewBody').innerHTML = `
-        <div class="mb-2"><i class="bi bi-clock me-2 text-info"></i><strong>Inicio:</strong> ${event.startStr || '—'}</div>
-        ${event.endStr ? `<div class="mb-2"><i class="bi bi-clock-history me-2 text-secondary"></i><strong>Fin:</strong> ${event.endStr}</div>` : ''}
-        ${desc ? `<div class="mt-3 p-3 rounded" style="background:#1a1a2e;"><i class="bi bi-text-left me-2 text-muted"></i>${_esc(desc)}</div>` : ''}
-    `;
-    new bootstrap.Modal(document.getElementById('modalViewPersonalEvent')).show();
-}
-
-function deletePersonalEvent() {
-    if (!_currentPEId || !confirm('¿Eliminar este evento?')) return;
-    fetch(`/api/personal_events/${_currentPEId}`, {method: 'DELETE'})
-        .then(r => r.json())
-        .then(d => {
-            if (d.success) {
-                bootstrap.Modal.getInstance(document.getElementById('modalViewPersonalEvent')).hide();
-                showAdminToast('<i class="bi bi-trash-fill me-2"></i>Evento eliminado', 'info');
-                if (_personalCalendarAdmin) _personalCalendarAdmin.refetchEvents();
-            }
-        });
-}
-
-// ══════════════════════════════════════════════════════════════════
 // DOCUMENTACIÓN
 // ══════════════════════════════════════════════════════════════════
 var _documentosData = [];
@@ -8215,21 +7830,7 @@ function showAdminToast(msg, type) {
 }
 </script>
 
-            <!-- ======================================================= -->
-            <!-- PESTAÑA MI CALENDARIO PERSONAL (ADMIN)                  -->
-            <!-- ======================================================= -->
-            <div class="tab-pane fade" id="cal-personal-admin">
-                <div class="d-flex justify-content-between mb-3 align-items-center flex-wrap gap-2">
-                    <h4 class="fw-bold text-white fs-5 m-0">
-                        <i class="bi bi-calendar-heart me-2" style="color:var(--nintec-cyan);"></i>Mi Calendario Personal
-                    </h4>
-                    <button class="btn btn-sm fw-bold" style="background:var(--nintec-purple); color:#fff;" data-bs-toggle="modal" data-bs-target="#modalAddPersonalEvent">
-                        <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Evento
-                    </button>
-                </div>
-                <p class="text-muted small mb-3"><i class="bi bi-info-circle me-1"></i>Este calendario es exclusivamente personal — visible solo para ti.</p>
-                <div id="personalCalendarAdmin" style="background:#fff; color:#000; padding:10px; border-radius:10px; min-height:600px;"></div>
-            </div>
+
 
         </div><!-- /tab-content -->
 
@@ -8406,83 +8007,6 @@ function showAdminToast(msg, type) {
             <div class="modal-footer border-secondary">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-warning" onclick="updateObjetivo()"><i class="bi bi-save-fill me-1"></i>Actualizar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- Modal: Añadir Evento Personal                               -->
-<!-- ============================================================ -->
-<div class="modal fade" id="modalAddPersonalEvent" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark text-white border-secondary">
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title"><i class="bi bi-calendar-plus me-2" style="color:var(--nintec-cyan);"></i>Nuevo Evento Personal</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">Título *</label>
-                    <input type="text" id="peTitle" class="form-control bg-black text-white border-secondary" placeholder="Ej: Reunión, Cita médica...">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Descripción</label>
-                    <textarea id="peDescription" class="form-control bg-black text-white border-secondary" rows="2"></textarea>
-                </div>
-                <div class="row g-3">
-                    <div class="col-6">
-                        <label class="form-label">Fecha inicio *</label>
-                        <input type="date" id="peStartDate" class="form-control bg-black text-white border-secondary">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label">Hora inicio</label>
-                        <input type="time" id="peStartTime" class="form-control bg-black text-white border-secondary">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label">Fecha fin</label>
-                        <input type="date" id="peEndDate" class="form-control bg-black text-white border-secondary">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label">Hora fin</label>
-                        <input type="time" id="peEndTime" class="form-control bg-black text-white border-secondary">
-                    </div>
-                </div>
-                <div class="mt-3">
-                    <label class="form-label">Color del evento</label>
-                    <div class="d-flex gap-2 flex-wrap mt-1">
-                        <button type="button" class="pe-color-btn btn btn-sm" style="background:#7c3aed; width:32px; height:32px; border-radius:50%; border:3px solid #fff;" onclick="selectPEColor('#7c3aed', this)"></button>
-                        <button type="button" class="pe-color-btn btn btn-sm" style="background:#00d4ff; width:32px; height:32px; border-radius:50%; border:2px solid #444;" onclick="selectPEColor('#00d4ff', this)"></button>
-                        <button type="button" class="pe-color-btn btn btn-sm" style="background:#198754; width:32px; height:32px; border-radius:50%; border:2px solid #444;" onclick="selectPEColor('#198754', this)"></button>
-                        <button type="button" class="pe-color-btn btn btn-sm" style="background:#ffc107; width:32px; height:32px; border-radius:50%; border:2px solid #444;" onclick="selectPEColor('#ffc107', this)"></button>
-                        <button type="button" class="pe-color-btn btn btn-sm" style="background:#dc3545; width:32px; height:32px; border-radius:50%; border:2px solid #444;" onclick="selectPEColor('#dc3545', this)"></button>
-                        <button type="button" class="pe-color-btn btn btn-sm" style="background:#0dcaf0; width:32px; height:32px; border-radius:50%; border:2px solid #444;" onclick="selectPEColor('#0dcaf0', this)"></button>
-                    </div>
-                    <input type="hidden" id="peColor" value="#7c3aed">
-                </div>
-            </div>
-            <div class="modal-footer border-secondary">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn fw-bold" style="background:var(--nintec-purple); color:#fff;" onclick="savePersonalEvent()"><i class="bi bi-save-fill me-1"></i>Guardar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- Modal: Ver / Editar Evento Personal                         -->
-<!-- ============================================================ -->
-<div class="modal fade" id="modalViewPersonalEvent" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark text-white border-secondary">
-            <div class="modal-header border-0" id="peViewHeader" style="border-bottom:3px solid var(--nintec-purple) !important;">
-                <h5 class="modal-title" id="peViewTitle"></h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="peViewBody"></div>
-            <div class="modal-footer border-secondary">
-                <button type="button" class="btn btn-danger btn-sm" id="peDeleteBtn" onclick="deletePersonalEvent()"><i class="bi bi-trash-fill me-1"></i>Eliminar</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
