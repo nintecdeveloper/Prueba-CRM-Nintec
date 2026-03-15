@@ -7372,12 +7372,18 @@ function viewDocumento(id) {
             if (!data.success) return;
             const d = data.doc;
             document.getElementById('viewDocTitle').innerHTML = `<i class="bi bi-file-earmark-text me-2 text-info"></i>${_esc(d.title)}`;
+            const dlLink = d.filename
+                ? `<a href="/uploads/${encodeURIComponent(d.filename)}" target="_blank" download
+                       class="badge bg-success bg-opacity-25 border border-success text-success text-decoration-none">
+                       <i class="bi bi-download me-1"></i>Descargar archivo</a>`
+                : '';
             document.getElementById('viewDocMeta').innerHTML = `
                 <span class="badge bg-info bg-opacity-25 border border-info text-info">${d.category}</span>
                 <span class="text-muted small"><i class="bi bi-person me-1"></i>${_esc(d.uploaded_by)}</span>
                 <span class="text-muted small"><i class="bi bi-calendar me-1"></i>${d.created_at}</span>
+                ${dlLink}
             `;
-            document.getElementById('viewDocContent').textContent = d.content || '(Sin contenido)';
+            document.getElementById('viewDocContent').textContent = d.content || (d.filename ? '(Archivo binario — usa el botón Descargar para abrirlo)' : '(Sin contenido)');
             document.getElementById('editDocBtn').onclick = () => openEditDocumento(d);
             document.getElementById('deleteDocBtn').onclick = () => deleteDocumento(id);
             new bootstrap.Modal(document.getElementById('modalViewDocumento')).show();
@@ -7409,66 +7415,67 @@ document.addEventListener('DOMContentLoaded', function() {
             if (titleEl && !titleEl.value) {
                 titleEl.value = file.name.replace(/\.[^.]+$/, '');
             }
-            // Preview text files
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                preview.textContent = e.target.result.substring(0, 1000) + (e.target.result.length > 1000 ? '
+            // Preview text-based files; show info for binary files
+            const isText = /\.(txt|md|csv|json|xml|html)$/i.test(file.name);
+            if (isText) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.textContent = e.target.result.substring(0, 1000) + (e.target.result.length > 1000 ? '
 ...' : '');
+                    preview.classList.remove('d-none');
+                };
+                reader.readAsText(file);
+            } else {
+                preview.textContent = '📎 ' + file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
                 preview.classList.remove('d-none');
-            };
-            reader.readAsText(file);
+            }
+        });
+    }
+    // Reset modal fields when closed
+    const modalEl = document.getElementById('modalAddDocumento');
+    if (modalEl) {
+        modalEl.addEventListener('hidden.bs.modal', function() {
+            const fi = document.getElementById('docFile');        if (fi)  fi.value  = '';
+            const t  = document.getElementById('docTitle');       if (t)   t.value   = '';
+            const d  = document.getElementById('docDescription'); if (d)   d.value   = '';
+            const pr = document.getElementById('docFilePreview'); if (pr)  pr.classList.add('d-none');
         });
     }
 });
 
 function saveDocumento() {
-    const isFileTab = document.getElementById('docTabArchivoBtn')?.classList.contains('active');
     const fileEl = document.getElementById('docFile');
-    const hasFile = isFileTab && fileEl && fileEl.files.length > 0;
-    const title = document.getElementById('docTitle').value.trim();
-
-    if (hasFile) {
-        // File upload via FormData
-        const file = fileEl.files[0];
-        const finalTitle = title || file.name.replace(/\.[^.]+$/, '');
-        const formData = new FormData();
-        formData.append('title', finalTitle);
-        formData.append('description', document.getElementById('docDescription').value);
-        formData.append('category', document.getElementById('docCategory').value);
-        formData.append('file', file);
-        fetch('/api/documentos', { method: 'POST', body: formData })
-            .then(r => r.json())
-            .then(d => {
-                if (d.success) {
-                    bootstrap.Modal.getInstance(document.getElementById('modalAddDocumento')).hide();
-                    showAdminToast('<i class="bi bi-check-circle-fill me-2"></i>Documento importado', 'success');
-                    loadDocumentos();
-                    document.getElementById('docFile').value = '';
-                    document.getElementById('docFilePreview').classList.add('d-none');
-                } else { showAdminToast(d.msg || 'Error', 'error'); }
-            });
+    if (!fileEl || fileEl.files.length === 0) {
+        showAdminToast('Selecciona un archivo para subir', 'error');
         return;
     }
+    const file = fileEl.files[0];
+    const title = document.getElementById('docTitle').value.trim() || file.name.replace(/\.[^.]+$/, '');
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('description', document.getElementById('docDescription').value);
+    formData.append('category', document.getElementById('docCategory').value);
+    formData.append('file', file);
 
-    if (!title) { showAdminToast('El título es obligatorio', 'error'); return; }
-    fetch('/api/documentos', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            title,
-            description: document.getElementById('docDescription').value,
-            category: document.getElementById('docCategory').value,
-            content: document.getElementById('docContent').value
+    const btn = document.querySelector('#modalAddDocumento .btn-info');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Subiendo...'; }
+
+    fetch('/api/documentos', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(d => {
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="bi bi-save-fill me-1"></i>Guardar Documento'; }
+            if (d.success) {
+                bootstrap.Modal.getInstance(document.getElementById('modalAddDocumento')).hide();
+                showAdminToast('<i class="bi bi-check-circle-fill me-2"></i>Documento subido correctamente', 'success');
+                loadDocumentos();
+            } else {
+                showAdminToast(d.msg || 'Error al subir el documento', 'error');
+            }
         })
-    })
-    .then(r => r.json())
-    .then(d => {
-        if (d.success) {
-            bootstrap.Modal.getInstance(document.getElementById('modalAddDocumento')).hide();
-            showAdminToast('<i class="bi bi-check-circle-fill me-2"></i>Documento guardado', 'success');
-            loadDocumentos();
-        } else { showAdminToast(d.msg || 'Error', 'error'); }
-    });
+        .catch(() => {
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="bi bi-save-fill me-1"></i>Guardar Documento'; }
+            showAdminToast('Error de conexión al subir el archivo', 'error');
+        });
 }
 
 function updateDocumento() {
@@ -8492,17 +8499,8 @@ function showAdminToast(msg, type) {
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <!-- Tabs: texto vs archivo -->
-                <ul class="nav nav-tabs mb-3" id="docInputTabs">
-                    <li class="nav-item">
-                        <button class="nav-link active text-white" data-bs-toggle="tab" data-bs-target="#docTabTexto" id="docTabTextoBtn"><i class="bi bi-pencil-square me-1"></i>Escribir texto</button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link text-white" data-bs-toggle="tab" data-bs-target="#docTabArchivo" id="docTabArchivoBtn"><i class="bi bi-upload me-1"></i>Importar archivo</button>
-                    </li>
-                </ul>
                 <div class="mb-3">
-                    <label class="form-label">Título <span id="docTitleOptional" class="text-muted small">(opcional si subes archivo)</span></label>
+                    <label class="form-label">Título <span class="text-muted small">(opcional — se toma del nombre del archivo)</span></label>
                     <input type="text" id="docTitle" class="form-control bg-black text-white border-secondary" placeholder="Nombre del documento...">
                 </div>
                 <div class="row g-3 mb-3">
@@ -8520,23 +8518,13 @@ function showAdminToast(msg, type) {
                         <input type="text" id="docDescription" class="form-control bg-black text-white border-secondary" placeholder="Breve descripción...">
                     </div>
                 </div>
-                <div class="tab-content">
-                    <div class="tab-pane fade show active" id="docTabTexto">
-                        <div class="mb-3">
-                            <label class="form-label">Contenido</label>
-                            <textarea id="docContent" class="form-control bg-black text-white border-secondary" rows="8" placeholder="Escribe aquí el contenido..."></textarea>
-                            <small class="text-muted">Puedes usar Markdown básico.</small>
-                        </div>
-                    </div>
-                    <div class="tab-pane fade" id="docTabArchivo">
-                        <div class="mb-3">
-                            <label class="form-label">Archivo a importar</label>
-                            <input type="file" id="docFile" class="form-control bg-black text-white border-secondary" accept=".txt,.md,.csv,.json,.xml,.html,.pdf,.doc,.docx">
-                            <small class="text-muted">Formatos soportados: .txt, .md, .csv, .json, .xml, .html y otros archivos de texto. El título se tomará del nombre del archivo si no se especifica.</small>
-                        </div>
-                        <div id="docFilePreview" class="p-3 rounded d-none" style="background:#0a0a18; border:1px solid #333; max-height:200px; overflow-y:auto; font-family:monospace; font-size:0.82rem; white-space:pre-wrap;"></div>
-                    </div>
+                <div class="mb-3">
+                    <label class="form-label"><i class="bi bi-upload me-1 text-info"></i>Archivo a importar <span class="text-danger">*</span></label>
+                    <input type="file" id="docFile" class="form-control bg-black text-white border-secondary"
+                           accept=".txt,.md,.csv,.json,.xml,.html,.pdf,.doc,.docx,.xlsx,.xls,.ppt,.pptx">
+                    <small class="text-muted">Formatos: PDF, Word, Excel, PowerPoint, TXT, MD, CSV, JSON, XML, HTML. El título se tomará del nombre del archivo si no se especifica.</small>
                 </div>
+                <div id="docFilePreview" class="p-3 rounded d-none" style="background:#0a0a18; border:1px solid #333; max-height:200px; overflow-y:auto; font-family:monospace; font-size:0.82rem; white-space:pre-wrap;"></div>
             </div>
             <div class="modal-footer border-secondary">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>

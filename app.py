@@ -22,7 +22,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'doc', 'docx', 'txt'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'doc', 'docx', 'txt', 'md', 'csv', 'json', 'xml', 'html', 'xlsx', 'xls', 'ppt', 'pptx'}
 
 # Crear carpeta de uploads si no existe
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
@@ -4880,44 +4880,65 @@ def api_get_documentos():
 def api_add_documento():
     if current_user.role != 'admin':
         return jsonify({'success': False, 'msg': 'Solo administradores pueden subir documentos'}), 403
-    # Support both JSON and multipart/form-data (file upload)
-    if request.content_type and 'multipart' in request.content_type:
-        title = request.form.get('title', '').strip()
+
+    saved_filename = None
+    content = ''
+    title = ''
+    description = ''
+    category = 'general'
+
+    uploaded_file = request.files.get('file')
+    if uploaded_file and uploaded_file.filename:
+        # ── Guardar el archivo en disco ─────────────────────────────
+        original_name = secure_filename(uploaded_file.filename)
+        if not original_name:
+            return jsonify({'success': False, 'msg': 'Nombre de archivo inválido'}), 400
+
+        title       = request.form.get('title', '').strip() or os.path.splitext(original_name)[0]
         description = request.form.get('description', '')
-        category = request.form.get('category', 'general')
-        content = request.form.get('content', '')
-        filename = None
-        uploaded_file = request.files.get('file')
-        if uploaded_file and uploaded_file.filename:
-            filename = uploaded_file.filename
-            if not title:
-                title = filename
-            # Read text content from uploaded file if content not provided
-            if not content:
-                try:
-                    content = uploaded_file.read().decode('utf-8', errors='replace')
-                except Exception:
-                    content = ''
+        category    = request.form.get('category', 'general')
+
+        timestamp      = datetime.now().strftime('%Y%m%d_%H%M%S')
+        saved_filename = f"doc_{timestamp}_{original_name}"
+        filepath       = os.path.join(app.config['UPLOAD_FOLDER'], saved_filename)
+
+        try:
+            uploaded_file.save(filepath)
+        except Exception as e:
+            print(f"Error guardando documento: {e}")
+            return jsonify({'success': False, 'msg': 'Error al guardar el archivo en el servidor'}), 500
+
+        # Para archivos de texto también guardamos contenido en BD (visualización inline)
+        text_extensions = {'txt', 'md', 'csv', 'json', 'xml', 'html'}
+        ext = original_name.rsplit('.', 1)[-1].lower() if '.' in original_name else ''
+        if ext in text_extensions:
+            try:
+                with open(filepath, 'r', encoding='utf-8', errors='replace') as f_in:
+                    content = f_in.read()
+            except Exception:
+                content = ''
     else:
-        body = request.get_json() or {}
-        title = body.get('title', '').strip()
+        # Sin archivo — solo metadatos (compatibilidad con llamadas directas a la API)
+        body        = request.get_json() or {}
+        title       = body.get('title', '').strip()
         description = body.get('description', '')
-        category = body.get('category', 'general')
-        content = body.get('content', '')
-        filename = body.get('filename', None)
+        category    = body.get('category', 'general')
+        content     = body.get('content', '')
+
     if not title:
         return jsonify({'success': False, 'msg': 'El título es obligatorio'}), 400
+
     d = Documento(
         title=title,
         description=description,
         category=category,
         content=content,
-        filename=filename,
+        filename=saved_filename,
         uploaded_by=current_user.id
     )
     db.session.add(d)
     db.session.commit()
-    return jsonify({'success': True, 'id': d.id})
+    return jsonify({'success': True, 'id': d.id, 'filename': saved_filename or ''})
 
 @app.route('/api/documentos/<int:did>', methods=['GET'])
 @login_required
