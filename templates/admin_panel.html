@@ -737,6 +737,38 @@
 
                 <!-- Gráficos -->
                 <div class="row g-3">
+                    <!-- Gráfico: Tipos de tarea (pie) -->
+                    <div class="col-12 col-lg-6">
+                        <div class="card bg-dark border-secondary">
+                            <div class="card-header border-secondary">
+                                <h6 class="mb-0 text-white fw-bold">
+                                    <i class="bi bi-pie-chart-fill me-2 text-info"></i>Tareas por Tipo de Servicio
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="taskTypesPieChart" style="max-height:300px;"></canvas>
+                                <div id="noPieData" class="text-center text-muted py-4" style="display:none;">
+                                    <i class="bi bi-bar-chart-line fs-2 d-block mb-2"></i>Sin datos para mostrar
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Gráfico: Tareas completadas por mes (bar) -->
+                    <div class="col-12 col-lg-6">
+                        <div class="card bg-dark border-secondary">
+                            <div class="card-header border-secondary">
+                                <h6 class="mb-0 text-white fw-bold">
+                                    <i class="bi bi-bar-chart-fill me-2 text-success"></i>Tareas Completadas (últimos 6 meses)
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="monthlyTasksChart" style="max-height:300px;"></canvas>
+                                <div id="noMonthlyData" class="text-center text-muted py-4" style="display:none;">
+                                    <i class="bi bi-calendar-x fs-2 d-block mb-2"></i>Sin datos para mostrar
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -4058,6 +4090,7 @@
         // ==================== ESTADÍSTICAS GLOBALES ====================
 
         let taskTypesPieChart = null;
+        let monthlyTasksChart = null;
 
         function toggleCustomDateFields() {
             const period = document.getElementById('statsFilterPeriod').value;
@@ -4106,6 +4139,8 @@
 
                         // Crear gráfico circular de tipos de tareas
                         createTaskTypesPieChart(data.task_types);
+                        // Crear gráfico de barras mensual
+                        createMonthlyTasksChart(data.monthly_tasks);
                     } else {
                         alert('Error al cargar estadísticas: ' + response.msg);
                     }
@@ -4119,6 +4154,9 @@
         function createTaskTypesPieChart(taskTypes) {
             const canvas = document.getElementById('taskTypesPieChart');
             const noDataDiv = document.getElementById('noPieData');
+
+            // Elementos no encontrados — salir silenciosamente
+            if (!canvas || !noDataDiv) return;
 
             // Si no hay datos
             if (!taskTypes || Object.keys(taskTypes).length === 0) {
@@ -4188,6 +4226,60 @@
             });
         }
 
+
+        function createMonthlyTasksChart(monthlyTasks) {
+            const canvas    = document.getElementById('monthlyTasksChart');
+            const noDataDiv = document.getElementById('noMonthlyData');
+            if (!canvas || !noDataDiv) return;
+
+            if (!monthlyTasks || monthlyTasks.length === 0) {
+                canvas.style.display = 'none';
+                noDataDiv.style.display = 'block';
+                return;
+            }
+
+            canvas.style.display = 'block';
+            noDataDiv.style.display = 'none';
+
+            const labels = monthlyTasks.map(function(m) { return m.month; });
+            const counts = monthlyTasks.map(function(m) { return m.count; });
+
+            if (monthlyTasksChart) { monthlyTasksChart.destroy(); }
+
+            var ctx = canvas.getContext('2d');
+            monthlyTasksChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Tareas completadas',
+                        data: counts,
+                        backgroundColor: 'rgba(0, 212, 255, 0.55)',
+                        borderColor: '#00d4ff',
+                        borderWidth: 2,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { labels: { color: '#ffffff' } }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#aaaaaa' },
+                            grid:  { color: 'rgba(255,255,255,0.05)' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#aaaaaa', stepSize: 1 },
+                            grid:  { color: 'rgba(255,255,255,0.07)' }
+                        }
+                    }
+                }
+            });
+        }
 
         // ==================== INICIALIZACIÓN ====================
 
@@ -7035,8 +7127,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (isText) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    preview.textContent = e.target.result.substring(0, 1000) + (e.target.result.length > 1000 ? '
-...' : '');
+                    preview.textContent = e.target.result.substring(0, 1000) + (e.target.result.length > 1000 ? '\n...' : '');
                     preview.classList.remove('d-none');
                 };
                 reader.readAsText(file);
